@@ -6,36 +6,12 @@ import { PanelMenu } from "primereact/panelmenu";
 class Panel extends Component {
   constructor() {
     super();
-    this.state = {
-      //items: data.items
-      items: [
-        {
-          label: "File",
-          icon: "pi pi-fw pi-file",
-          items: [
-            {
-              label: "New",
-              icon: "pi pi-fw pi-plus",
-              items: [
-                {
-                  label: "Bookmark",
-                  icon: "pi pi-fw pi-bookmark"
-                },
-                {
-                  label: "Video",
-                  icon: "pi pi-fw pi-video"
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    };
+    this.state = {};
   }
 
   handleNewEntry = () => {
     let newEntry = {};
-    if (this.props.category === "Mid") {
+    if (this.props.category === "Add New") {
       newEntry = Object.assign({
         label: this.props.newEntry,
         icon: "pi pi-fw pi-plus"
@@ -45,7 +21,8 @@ class Panel extends Component {
         label: this.props.newEntry
       });
     }
-    this.state.items.push(newEntry);
+
+    this.props.handleNewEntry(newEntry);
   };
   componentDidUpdate() {
     if (this.props.addEntry) {
@@ -58,13 +35,12 @@ class Panel extends Component {
     return (
       <div className="content-section implementation">
         <PanelMenu
-          model={this.state.items}
+          model={this.props.itemList}
           style={{
             width: "300px",
             marginLeft: 20
           }}
         />
-        {/* {this.props.addEntry ? this.handleNewEntry : null} */}
       </div>
     );
   }

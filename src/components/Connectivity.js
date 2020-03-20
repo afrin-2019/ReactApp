@@ -4,12 +4,13 @@ import Panel from "./Panel";
 import { Navbar } from "react-bootstrap";
 import { Dialog } from "primereact/dialog";
 import { Button } from "primereact/button";
-
+let valuetoReturn = [];
+let option = [];
 class Connectivity extends Component {
   state = {
     visible: false,
     textValue: "",
-    category: "Mid",
+    category: "Add New",
     addEntry: false,
 
     items: [
@@ -55,6 +56,7 @@ class Connectivity extends Component {
 
   onClick = () => {
     this.setState({ visible: true });
+    this.setState({ textValue: "" });
   };
 
   displayDropdown = () => {
@@ -62,19 +64,38 @@ class Connectivity extends Component {
     let i = 0;
     this.state.items.map(item => {
       i++;
-      console.log("i", i);
-      option.push(<option key={i}>{item.label}</option>);
+      option.push(
+        <option key={i} value={item.label}>
+          {item.label}
+        </option>
+      );
       if (item.items) {
         item.items.map(item1 => {
           i++;
-          console.log("i", i);
-          option.push(<option key={i}>{item1.label}</option>);
-          console.log("length", item1.items.length);
+          option.push(
+            <option key={i} value={item1.label}>
+              {item1.label}
+            </option>
+          );
+
           if (item1.items) {
             item1.items.map(item2 => {
               i++;
-              console.log("i", i);
-              option.push(<option key={i}>{item2.label}</option>);
+              option.push(
+                <option key={i} value={item2.label}>
+                  {item2.label}
+                </option>
+              );
+              if (item2.items) {
+                item1.items.map(item2 => {
+                  i++;
+                  option.push(
+                    <option key={i} value={item2.label}>
+                      {item2.label}
+                    </option>
+                  );
+                });
+              }
             });
           }
         });
@@ -83,6 +104,40 @@ class Connectivity extends Component {
 
     return option;
   };
+
+  // displayDropdown = () => {
+  //   // let option = [];
+  //   let returnValue;
+  //   let i = 0;
+  //   this.state.items.map(item => {
+  //     i++;
+  //     console.log("in display", item);
+  //     option.push(
+  //       <option key={i} value={item.label}>
+  //         {item.label}
+  //       </option>
+  //     );
+
+  //     returnValue = this.recursiveDisplayDropdown(item, i);
+  //     // option.push(returnValue);
+  //   });
+  //   return returnValue;
+  // };
+
+  // recursiveDisplayDropdown = (item, i) => {
+  //   if (item.items) {
+  //     item.items.map(item1 => {
+  //       i++;
+  //       option.push(
+  //         <option key={i} value={item1.label}>
+  //           {item1.label}
+  //         </option>
+  //       );
+  //       this.recursiveDisplayDropdown(item1, i);
+  //     });
+  //   }
+  //   return option;
+  // };
 
   onHide = () => {
     this.setState({ visible: false });
@@ -94,7 +149,7 @@ class Connectivity extends Component {
 
   onConfirm = () => {
     this.setState({ visible: false });
-    this.setState({ addEntry: true }, () => console.log("changed"));
+    this.setState({ addEntry: true });
   };
   handleCategoryChange = category => {
     this.setState({ category: category });
@@ -102,6 +157,34 @@ class Connectivity extends Component {
 
   changeEntryStatus = () => {
     this.setState({ addEntry: false });
+  };
+
+  addItems = item => {
+    if (this.state.category === "Add New") {
+      let newItemList = [...this.state.items, item];
+      this.setState({ items: newItemList });
+    } else {
+      this.state.items.map(itemList => {
+        this.recursiveSearch(itemList, item);
+      });
+    }
+  };
+
+  recursiveSearch = (itemList, item) => {
+    console.log("in recursive search", itemList);
+    if (itemList.label === this.state.category) {
+      if (!itemList.items) {
+        Object.assign(itemList, { items: [] });
+      }
+      itemList.items = [...itemList.items, item];
+      console.log("newItemList", this.state.items);
+      this.setState({ items: this.state.items });
+    } else if (itemList.items) {
+      console.log("in else");
+      itemList.items.map(item1 => {
+        this.recursiveSearch(item1, item);
+      });
+    }
   };
 
   render() {
@@ -120,10 +203,12 @@ class Connectivity extends Component {
         </Navbar>
         <div className="panelbar">
           <Panel
+            itemList={this.state.items}
             newEntry={this.state.textValue}
             category={this.state.category}
             addEntry={this.state.addEntry}
             handleEntry={this.changeEntryStatus}
+            handleNewEntry={this.addItems}
           />
         </div>
         <Dialog
@@ -144,7 +229,7 @@ class Connectivity extends Component {
             value={this.state.category}
             onChange={event => this.handleCategoryChange(event.target.value)}
           >
-            <option value="New">Add New</option>
+            <option value="Add New">Add New</option>
             {this.displayDropdown()}
           </select>
         </Dialog>
