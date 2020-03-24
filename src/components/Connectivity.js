@@ -4,54 +4,30 @@ import Panel from "./Panel";
 import { Navbar } from "react-bootstrap";
 import { Dialog } from "primereact/dialog";
 import { Button } from "primereact/button";
-let valuetoReturn = [];
-let option = [];
+import ContextMenu from "react-context-menu";
+import DeleteDialog from "./DeleteDialog";
+
 class Connectivity extends Component {
   state = {
     visible: false,
     textValue: "",
     category: "Add New",
     addEntry: false,
-
     items: [
       {
-        label: "File",
-        icon: "pi pi-fw pi-file",
-        command: event => {
-          console.log(event.item.label);
-        },
-        items: [
-          {
-            label: "New",
-            icon: "pi pi-fw pi-plus",
-            command: event => {
-              console.log(event.item.label);
-            },
-
-            items: [
-              {
-                label: "Bookmark",
-                icon: "pi pi-fw pi-bookmark",
-                command: event => {
-                  console.log(event.item.label);
-                }
-              },
-              {
-                label: "Video",
-                icon: "pi pi-fw pi-video",
-                command: () => {
-                  console.log("video clicked");
-                }
-              }
-            ]
-          }
-        ]
+        label: "Level1",
+        icon: "pi pi-fw pi-plus"
       },
       {
-        label: "NextFile",
-        icon: "pi pi-fw pi-file"
+        label: "Level2",
+        icon: "pi pi-fw pi-plus"
       }
-    ]
+    ],
+    deleteDialog: false
+  };
+
+  updateItems = item => {
+    this.setState({ items: item });
   };
 
   onClick = () => {
@@ -73,8 +49,8 @@ class Connectivity extends Component {
         item.items.map(item1 => {
           i++;
           option.push(
-            <option key={i} value={item1.label}>
-              {item1.label}
+            <option key={i} value={item.label / item1.label}>
+              {item.label}/{item1.label}
             </option>
           );
 
@@ -82,16 +58,21 @@ class Connectivity extends Component {
             item1.items.map(item2 => {
               i++;
               option.push(
-                <option key={i} value={item2.label}>
-                  {item2.label}
+                <option key={i} value={item.label / item1.label / item2.label}>
+                  &nbsp;&nbsp;{item2.label}
                 </option>
               );
               if (item2.items) {
-                item1.items.map(item2 => {
+                item2.items.map(item3 => {
                   i++;
                   option.push(
-                    <option key={i} value={item2.label}>
-                      {item2.label}
+                    <option
+                      key={i}
+                      value={
+                        item.label / item1.label / item2.label / item3.label
+                      }
+                    >
+                      &nbsp;&nbsp;&nbsp;{item3.label}
                     </option>
                   );
                 });
@@ -159,14 +140,58 @@ class Connectivity extends Component {
     this.setState({ addEntry: false });
   };
 
-  addItems = item => {
-    if (this.state.category === "Add New") {
-      let newItemList = [...this.state.items, item];
-      this.setState({ items: newItemList });
-    } else {
-      this.state.items.map(itemList => {
-        this.recursiveSearch(itemList, item);
+  checkUniqueness = (itemName, newItem) => {
+    console.log("in check", itemName.label, "newitem" + newItem.label);
+    let isExist = false;
+    if (itemName.label === newItem.label) {
+      isExist = true;
+      return isExist;
+    }
+    if (itemName.items) {
+      itemName.items.map(nextItem => {
+        this.checkUniqueness(nextItem.label, newItem.label);
       });
+    }
+    console.log("exist", isExist);
+    return isExist;
+  };
+
+  addItems = item => {
+    let itemExist = false;
+
+    // var index = this.state.items.findIndex(
+    //   x => x.label === this.state.category
+    // );
+    // if (index === -1) {
+    //   this.state.items.map(item => {
+    //     console.log("check", item);
+    //     if (item.items) {
+    //       var index1 = item.items.findIndex(
+    //         y => y.label === this.state.category
+    //       );
+    //       console.log("index1", index1);
+    //     }
+    //   });
+    // }
+    console.log("category", this.state.category);
+    if (this.state.category === "Add New") {
+      this.checkUniqueness(this.state.items, item);
+    }
+    this.state.items.map(itemName => {
+      if (!itemExist) itemExist = this.checkUniqueness(itemName, item);
+      console.log("item exist", itemExist);
+    });
+    if (itemExist) {
+      alert("already Exist");
+    } else {
+      if (this.state.category === "Add New") {
+        let newItemList = [...this.state.items, item];
+        this.setState({ items: newItemList });
+      } else {
+        this.state.items.map(itemList => {
+          this.recursiveSearch(itemList, item);
+        });
+      }
     }
   };
 
@@ -187,6 +212,13 @@ class Connectivity extends Component {
     }
   };
 
+  handleDelete = () => {
+    this.setState({ deleteDialog: true });
+  };
+
+  closeDeleteDialog = () => {
+    this.setState({ deleteDialog: false });
+  };
   render() {
     const footer = (
       <div>
@@ -197,9 +229,14 @@ class Connectivity extends Component {
     return (
       <div style={{ marginLeft: 200 }}>
         <Navbar bg="light" expand="lg">
-          <button onClick={this.onClick}>
-            <i className="fa fa-fw fa-plus" style={{ margin: 10 }}></i>
-          </button>
+          <div>
+            <button onClick={this.onClick}>
+              <i className="fa fa-fw fa-plus" style={{ margin: 10 }}></i>
+            </button>
+            <button style={{ marginLeft: 10 }} onClick={this.handleDelete}>
+              <i className="fa fa-fw fa-trash" style={{ margin: 10 }}></i>
+            </button>
+          </div>
         </Navbar>
         <div className="panelbar">
           <Panel
@@ -233,6 +270,14 @@ class Connectivity extends Component {
             {this.displayDropdown()}
           </select>
         </Dialog>
+        {this.state.deleteDialog ? (
+          <DeleteDialog
+            onHide={this.closeDeleteDialog}
+            displayDropdown={this.displayDropdown}
+            panelMenu={this.state.items}
+            updateItem={this.updateItems}
+          />
+        ) : null}
       </div>
     );
   }
