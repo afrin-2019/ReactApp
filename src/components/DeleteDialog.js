@@ -16,38 +16,25 @@ class DeleteDilog extends Component {
     } else {
       console.log("delete", this.state.category);
       console.log("item", this.props.panelMenu);
+      var position = this.state.category.split(",");
       let panelMenu = [...this.props.panelMenu];
-      console.log("cloned item", panelMenu);
-      let returnValue = {};
-      let updated_panelMenu = panelMenu.filter(item => {
-        console.log("panelmenu", item);
-        if (!item.items) {
-          return item.label !== this.state.category;
-        } else {
-          returnValue = this.deleteItem(item.items);
-          console.log("returnval", returnValue);
-          // return returnValue !== this.state.category;
-        }
-      });
-      console.log("after delete", updated_panelMenu);
-      this.props.updateItem(updated_panelMenu);
+
+      if (position.length === 1) {
+        panelMenu.splice(position[0], 1);
+      }
+      if (position.length === 2) {
+        panelMenu[position[0]].items.splice([position[1]], 1);
+        console.log(panelMenu);
+      }
+      if (position.length === 3) {
+        console.log(
+          panelMenu[position[0]].items[position[1]].items[position[2]]
+        );
+        panelMenu[position[0]].items[position[1]].items.splice(position[2], 1);
+      }
+      this.props.updateItem(panelMenu);
     }
     this.props.onHide();
-  };
-
-  deleteItem = item => {
-    let value;
-    console.log("in delete item", item);
-    item.filter(innerItem => {
-      console.log("innerItem", innerItem);
-      if (!innerItem.items) {
-        console.log("in delete inneritem", innerItem.label);
-        return innerItem.label !== this.state.category;
-      } else {
-        this.deleteItem(innerItem.items);
-      }
-    });
-    //return item;
   };
 
   handleCategoryChange = category => {

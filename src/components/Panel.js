@@ -11,16 +11,10 @@ class Panel extends Component {
 
   handleNewEntry = () => {
     let newEntry = {};
-    if (this.props.category === "Add New") {
-      newEntry = Object.assign({
-        label: this.props.newEntry,
-        icon: "pi pi-fw pi-plus"
-      });
-    } else {
-      newEntry = Object.assign({
-        label: this.props.newEntry
-      });
-    }
+    newEntry = Object.assign({
+      label: this.props.newEntry
+    });
+    console.log("newentry", newEntry);
 
     this.props.handleNewEntry(newEntry);
   };
