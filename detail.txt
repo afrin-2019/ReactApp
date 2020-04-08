@@ -1,0 +1,110 @@
+{
+“Level1” :"Delhi”
+    {
+      “Server” : “OSS1”
+          {
+             “ip”:”10.0.0.1”,
+             “Username”:””,
+               “Password”:””,
+                nodetype:”msc”,
+                {
+                “nodename” :”” ,
+                 “nodename” : “”
+                },
+               “nodetype”:bsc
+                 {}
+          }
+        “Level2”:”north”
+         {
+             “server”:”oss2”
+                {}
+         }
+     },
+}
+.....................................................
+
+{
+"items : [
+    {
+    "Delhi":
+    {
+        "Server":
+        ["oss1","oss2"],
+        "North":
+        {
+            "Server:"
+            [
+                "oss1","oss2"
+            ]
+        }
+    },
+    "Blr":
+    {
+        "Server":
+        ["oss1","oss2"],
+        "North":
+        {
+            "Server:"
+            [
+                "oss1","oss2"
+            ]
+        }
+    }
+    }
+]
+}
+
+....................
+
+{
+       
+    "Delhi":[{
+         "North":[{
+               "Server":[{
+                   "nodename": "oss1",
+                    "ip" : "10.0.0.1",
+                   },{
+                      "nodename": "oss2",
+                    "ip" : "10.0.0.2",
+                   }]
+                  }]
+            }],
+     "blr":[{
+         "North":[{
+               "Server":[ "oss1","oss2"]
+                  }]
+            }]
+
+       
+}
+
+{   
+    "Level1":[{
+        "label":"Delhi",
+        "Server":[
+            {
+                "id":"101",
+                "nodename":"oss1"
+            }
+        ],  
+        "Level2":[
+            {
+                "Label":"North"
+                "Server":[
+                    {
+                        "id":"102",
+                        "nodename":"Oss1"
+                    },
+                    {
+                        "id":"103",
+                        "nodename":"oss2"
+                    }
+                ]
+            },
+            {
+                "Lable":"South"
+            }
+        ]   
+    },
+    ]
+}
