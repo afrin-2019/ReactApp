@@ -51,6 +51,15 @@ code {
   opacity: 0.6;
 }
 
+.iconStyle:hover {
+  color: #818181;
+  visibility: visible;
+}
+
+.iconStyle {
+  cursor: "pointer";
+}
+
 .steps {
   height: 100%;
   width: 200px;

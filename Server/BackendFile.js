@@ -227,23 +227,50 @@ MongoClient.connect(url, function(err, db) {
   });
 
   //insert the first level panel menu into PanelMenuCollectionNew
+  // app.post("/insert/connectivity/level1/type2", (req, res) => {
+  //   var Topid = { TopId: "000" };
+  //   var label = { Label: req.body.level1 };
+  //   var type = { Type: "level" };
+  //   dbo
+  //     .collection("PanelMenuCollectionNew")
+  //     .countDocuments()
+  //     .then(response => {
+  //       var id = { ID: response + 1 };
+  //       var insertDetails = Object.assign({}, Topid, id, label, type);
+  //       dbo
+  //         .collection("PanelMenuCollectionNew")
+  //         .insertOne(insertDetails, function(err, res) {
+  //           if (err) throw err;
+  //         });
+  //       res.send("inserted");
+  //     });
+  // });
+
+  // //insert the first level panel menu into PanelMenuCollectionNew
   app.post("/insert/connectivity/level1/type2", (req, res) => {
+    console.log("req", req.body);
     var Topid = { TopId: "000" };
     var label = { Label: req.body.level1 };
     var type = { Type: "level" };
     dbo
       .collection("PanelMenuCollectionNew")
-      .countDocuments()
-      .then(response => {
-        var id = { ID: response + 1 };
+      .find({})
+      .toArray(function(err, result) {
+        console.log(result);
+        if (err) throw err;
+        var i = result.length;
+        var lastDoc = result[i - 1];
+        console.log(lastDoc);
+        var id = { ID: lastDoc.ID + 1 };
+        console.log("id", id);
         var insertDetails = Object.assign({}, Topid, id, label, type);
         dbo
           .collection("PanelMenuCollectionNew")
           .insertOne(insertDetails, function(err, res) {
             if (err) throw err;
           });
-        res.send("inserted");
       });
+    res.send("inserted");
   });
 
   //insert the second level panel menu into PanelMenuCollectionNew
@@ -253,17 +280,23 @@ MongoClient.connect(url, function(err, db) {
     var type = { Type: "level" };
     dbo
       .collection("PanelMenuCollectionNew")
-      .countDocuments()
-      .then(response => {
-        var id = { ID: response + 1 };
+      .find({})
+      .toArray(function(err, result) {
+        console.log(result);
+        if (err) throw err;
+        var i = result.length;
+        var lastDoc = result[i - 1];
+        console.log(lastDoc);
+        var id = { ID: lastDoc.ID + 1 };
+        console.log("id", id);
         var insertDetails = Object.assign({}, Topid, id, label, type);
         dbo
           .collection("PanelMenuCollectionNew")
           .insertOne(insertDetails, function(err, res) {
             if (err) throw err;
           });
-        res.send("inserted");
       });
+    res.send("inserted");
   });
 
   //insert Server into level1 panel menu
@@ -273,17 +306,23 @@ MongoClient.connect(url, function(err, db) {
     var type = { Type: "Server" };
     dbo
       .collection("PanelMenuCollectionNew")
-      .countDocuments()
-      .then(response => {
-        var id = { ID: response + 1 };
+      .find({})
+      .toArray(function(err, result) {
+        console.log(result);
+        if (err) throw err;
+        var i = result.length;
+        var lastDoc = result[i - 1];
+        console.log(lastDoc);
+        var id = { ID: lastDoc.ID + 1 };
+        console.log("id", id);
         var insertDetails = Object.assign({}, Topid, id, label, type);
         dbo
           .collection("PanelMenuCollectionNew")
           .insertOne(insertDetails, function(err, res) {
             if (err) throw err;
           });
-        res.send("inserted");
       });
+    res.send("inserted");
   });
 
   //delete document from PanelMenuCollection
@@ -295,6 +334,52 @@ MongoClient.connect(url, function(err, db) {
       .collection("PanelMenuCollectionNew")
       .deleteOne({ ID: id }, function(err, res) {
         if (err) throw err;
+      });
+
+    res.send("deleted");
+  });
+
+  //delete document from ServerDetail collection
+  app.delete("/delete/connectivity/server", (req, res) => {
+    console.log("req", req.body);
+    var id = req.body.id;
+    dbo
+      .collection("ServerDetailsCollection")
+      .deleteOne({ Server_Id: id.toString() }, function(err, res) {
+        if (err) throw err;
+      });
+    res.send("deleted from server collection");
+  });
+
+  //delete document from ServerDetail collection
+  app.delete("/delete/connectivity/node", (req, res) => {
+    console.log("req", req.body);
+    var id = req.body.id;
+    dbo
+      .collection("NodeCollection")
+      .deleteMany({ Server_Id: id }, function(err, res) {
+        if (err) throw err;
+      });
+    res.send("deleted from node collection");
+  });
+
+  app.delete("/delete/connectivity/multiple", (req, res) => {
+    var request = req.body.value;
+    console.log(request);
+    dbo
+      .collection("PanelMenuCollectionNew")
+      .deleteMany({ ID: { $in: request } }, function(err, res) {
+        if (err) throw err;
+        dbo
+          .collection("ServerDetailsCollection")
+          .deleteMany({ Server_Id: { $in: request } }, function(err, res) {
+            if (err) throw err;
+            dbo
+              .collection("NodeCollection")
+              .deleteMany({ Server_Id: { $in: request } }, function(err, res) {
+                if (err) throw err;
+              });
+          });
       });
     res.send("deleted");
   });
@@ -363,6 +448,11 @@ MongoClient.connect(url, function(err, db) {
       };
       request.push(req_Obj);
     });
+    dbo
+      .collection("NodeCollection")
+      .createIndex({ Node_Name: 1 }, { unique: true }, function(err, resp) {
+        if (err) throw err;
+      });
     console.log(request);
     dbo.collection("NodeCollection").insertMany(request, function(err, res) {
       if (err) throw err;

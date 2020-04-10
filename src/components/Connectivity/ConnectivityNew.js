@@ -9,7 +9,10 @@ import DeleteDialog from "./DeleteDialog";
 import axios from "axios";
 import ServerDetails from "./ServerDetails";
 import ServerDetailNew from "./ServerDetailNew";
-
+let newNodeName = [],
+  nodetype,
+  nextServer,
+  nextId;
 class Connectivity extends Component {
   state = {
     visible: false,
@@ -30,6 +33,9 @@ class Connectivity extends Component {
     nodes: [],
     serverInfo: {},
     userEntry: "New",
+    saveServer: false,
+    nodeType: "MSC",
+
     options: [
       {
         label: "New Server",
@@ -65,16 +71,16 @@ class Connectivity extends Component {
           levelInfo,
           levelInfoList = [];
         panelMenu.map(item => {
-          console.log("item", item);
+          //console.log("item", item);
 
           if (item.TopId === "000") {
-            console.log(item);
+            // console.log(item);
             newItem = Object.assign(
               { label: item.Label },
               { items: [] },
               { value: item.ID }
             );
-            console.log(newItem);
+            // console.log(newItem);
             newItemList = [...newItemList, newItem];
             levelInfo = Object.assign({ id: item.ID }, { label: item.Label });
             levelInfoList = [...levelInfoList, levelInfo];
@@ -82,14 +88,14 @@ class Connectivity extends Component {
           this.setState({ items: newItemList });
           this.setState({ topLevel: levelInfoList }, () => {
             if (item.TopId !== "000" && item.Type === "level") {
-              console.log("levelInfo", this.state.topLevel);
-              console.log("topid", item.TopId);
+              // console.log("levelInfo", this.state.topLevel);
+              // console.log("topid", item.TopId);
               this.state.topLevel.map(detail => {
                 console.log(detail.id + "" + item.TopId);
                 if (detail.id.toString() === item.TopId) {
-                  console.log("level1", detail.label);
+                  // console.log("level1", detail.label);
                   this.state.items.map((stateItem, index) => {
-                    console.log(stateItem);
+                    // console.log(stateItem);
                     console.log("itemtoinsert", item);
                     if (stateItem.label === detail.label) {
                       newItem = Object.assign(
@@ -109,7 +115,7 @@ class Connectivity extends Component {
             let item_to_insert;
             this.state.items.map((firstLevel, index) => {
               if (newItem.TopId === firstLevel.value.toString()) {
-                console.log("insert under", firstLevel.label);
+                //  console.log("insert under", firstLevel.label);
                 item_to_insert = Object.assign(
                   { label: newItem.Label },
                   {
@@ -124,10 +130,10 @@ class Connectivity extends Component {
               if (firstLevel.items) {
                 firstLevel.items.map((secondLevel, index1) => {
                   if (newItem.TopId === secondLevel.value.toString()) {
-                    console.log(
-                      "insert under",
-                      firstLevel.label + "/" + secondLevel.label
-                    );
+                    // console.log(
+                    //   "insert under",
+                    //   firstLevel.label + "/" + secondLevel.label
+                    // );
                     item_to_insert = Object.assign(
                       { label: newItem.Label },
                       {
@@ -156,12 +162,12 @@ class Connectivity extends Component {
       .get("http://localhost:5001/get/connectivity/newpanelmenu")
       .then(response => {
         this.setState({ tableDetail: response.data });
-        console.log("records", response.data[response.data.length - 1]);
+        // console.log("records", response.data[response.data.length - 1]);
         let newItem = response.data[response.data.length - 1];
         let item_to_insert;
         this.state.items.map((item, index) => {
           if (newItem.TopId === item.value.toString()) {
-            console.log("insert under", item.label);
+            //  console.log("insert under", item.label);
             item_to_insert = Object.assign(
               { label: newItem.Label },
               {
@@ -176,7 +182,7 @@ class Connectivity extends Component {
           if (item.items) {
             item.items.map((item1, index1) => {
               if (newItem.TopId === item1.value.toString()) {
-                console.log("insert under", item.label + "/" + item1.label);
+                // console.log("insert under", item.label + "/" + item1.label);
                 item_to_insert = Object.assign(
                   { label: newItem.Label },
                   {
@@ -199,16 +205,31 @@ class Connectivity extends Component {
   };
 
   showServerDetails = (server, id) => {
+    console.log("node name in connectivity", newNodeName);
     console.log("server");
+    if (newNodeName.length === 0) {
+      this.setServerDetails(server, id);
+    } else {
+      nextServer = server;
+      nextId = id;
+      this.setState({ nodeType: nodetype }, () =>
+        console.log("change nodetype", this.state.nodeType)
+      );
+      this.setState({ saveServer: true });
+    }
+  };
+
+  setServerDetails = (server, id) => {
     let isServer = false;
     this.setState({ serverName: server });
     this.setState({ serverId: id });
+    this.setState({ nodeType: "MSC" });
     axios
       .get("http://localhost:5001/get/connectivity/server-details")
       .then(response => {
         response.data.map(server => {
           console.log(server);
-          if (server.Server_Id === id.toString()) {
+          if (server.Server_Id === id) {
             this.setState({ serverInfo: server });
             this.setState({ userEntry: "old" });
             isServer = true;
@@ -287,7 +308,7 @@ class Connectivity extends Component {
     let option = [];
     let i = 0;
     this.state.items.map(item => {
-      console.log("itemname", item.label + "value" + item.value);
+      // console.log("itemname", item.label + "value" + item.value);
       if (item.items) {
         i++;
         option.push(
@@ -298,7 +319,7 @@ class Connectivity extends Component {
 
         if (item.items) {
           item.items.map(item1 => {
-            console.log("inner item", item1);
+            // console.log("inner item", item1);
             if (item1.items) {
               i++;
               option.push(
@@ -371,10 +392,10 @@ class Connectivity extends Component {
 
   checkUniqueness = (id, newItem) => {
     let isExist = false;
-    console.log("id", id);
+    // console.log("id", id);
 
     this.state.panelMenu.map(item => {
-      console.log("item", item);
+      //  console.log("item", item);
       if (id === item.TopId) {
         if (item.Label === newItem.label) {
           isExist = true;
@@ -397,11 +418,11 @@ class Connectivity extends Component {
   };
 
   addItemNew = item => {
-    console.log(
-      "openserver",
-      this.state.showServer + "openlevel",
-      this.state.showLevel
-    );
+    // console.log(
+    //   "openserver",
+    //   this.state.showServer + "openlevel",
+    //   this.state.showLevel
+    // );
     if (this.state.showServer) {
       console.log(this.state.category);
       if (this.state.category === "Add New") {
@@ -420,9 +441,9 @@ class Connectivity extends Component {
   addServer = item => {
     console.log("category", this.state.category);
     let isExist = false;
-    console.log("item to add", item);
+    // console.log("item to add", item);
     isExist = this.checkServerUniqueness(item);
-    console.log("exist", isExist);
+    // console.log("exist", isExist);
     if (isExist) {
       this.setState({ isError: true });
     } else {
@@ -442,11 +463,11 @@ class Connectivity extends Component {
   };
 
   addLevel = item => {
-    console.log("in add level");
+    // console.log("in add level");
     let isExist = false;
     console.log("category", this.state.category);
     if (this.state.category === "Add New") {
-      console.log("new", item);
+      //  console.log("new", item);
       isExist = this.checkUniqueness("000", item);
       if (isExist) {
         this.setState({ isError: true });
@@ -463,7 +484,7 @@ class Connectivity extends Component {
           });
       }
     } else {
-      console.log(this.state.category);
+      // console.log(this.state.category);
       isExist = this.checkUniqueness(this.state.category, item);
       if (isExist) {
         this.setState({ isError: true });
@@ -490,6 +511,32 @@ class Connectivity extends Component {
   closeDeleteDialog = () => {
     this.setState({ deleteDialog: false });
   };
+
+  refreshServer = () => {
+    console.log("in refresh");
+    this.setState({ serverInfo: {} });
+    this.setState({ serverDetails: false });
+  };
+
+  addNode = (node, type) => {
+    console.log("in add");
+    newNodeName.push(node);
+    nodetype = type;
+    //this.setState({ newNodeName: this.state.newNodeName });
+  };
+
+  deleteNode = () => {
+    // this.setState({ newNodeName: [] });
+    console.log("in delete");
+    newNodeName = [];
+  };
+
+  closeServerDialog = () => {
+    this.setState({ saveServer: false });
+    newNodeName = [];
+    this.setServerDetails(nextServer, nextId);
+  };
+
   render() {
     const footer = (
       <div>
@@ -555,14 +602,19 @@ class Connectivity extends Component {
         <Navbar bg="light" expand="lg">
           <div>
             <button
+              className="btn btn-sm btn-outline-secondary m-2"
               onClick={event => this.menu.toggle(event)}
               aria-controls="popup_menu"
               aria-haspopup={true}
             >
-              <i className="fa fa-fw fa-plus" style={{ margin: 10 }}></i>
+              <i className="fa fa-plus" style={{ margin: 5 }}></i>
             </button>
-            <button style={{ marginLeft: 10 }} onClick={this.handleDelete}>
-              <i className="fa fa-fw fa-trash" style={{ margin: 10 }}></i>
+            <button
+              className="btn btn-sm btn-outline-secondary m-2"
+              style={{ marginLeft: 10 }}
+              onClick={this.handleDelete}
+            >
+              <i className="fa fa-trash" style={{ margin: 5 }}></i>
             </button>
           </div>
         </Navbar>
@@ -589,6 +641,11 @@ class Connectivity extends Component {
               serverId={this.state.serverId}
               userEntry={this.state.userEntry}
               serverName={this.state.serverName}
+              addNode={this.addNode}
+              deleteNode={this.deleteNode}
+              saveServer={this.state.saveServer}
+              closeServerDialog={this.closeServerDialog}
+              nodeType={this.state.nodeType}
             />
           ) : null}
         </div>
@@ -600,6 +657,8 @@ class Connectivity extends Component {
             panelMenu={this.state.items}
             updateItem={this.refreshPanel}
             tableDetail={this.state.tableDetail}
+            serverId={this.state.serverId}
+            updateServer={this.refreshServer}
           />
         ) : null}
 

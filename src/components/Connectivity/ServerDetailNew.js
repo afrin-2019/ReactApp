@@ -2,13 +2,15 @@ import React, { Component } from "react";
 import { Form, Row, Col, Button, Card } from "react-bootstrap";
 import { Dialog } from "primereact/dialog";
 import axios from "axios";
+import $ from "jquery";
 import UploadExcel from "./UploadExcel";
+let nextNodeType;
 class ServerDetailNew extends Component {
   state = {
     userName: "",
     password: "",
     ipAddress: "",
-    nodeType: "MSC",
+    nodeType: this.props.nodeType,
     nodeNameArray: [],
     visible: false,
     nodeValue: "",
@@ -16,9 +18,14 @@ class ServerDetailNew extends Component {
     isError: false,
     isSave: false,
     newNodeName: [],
-    userEntry: this.props.userEntry
+    userEntry: this.props.userEntry,
+    saveDialog: false,
+    nodeInfo: this.props.nodeInfo
   };
   componentDidMount() {
+    // $(document).ready(function() {
+    //   $('[data-toggle="tooltip"]').tooltip();
+    // });
     let server = this.props.serverDetail;
     console.log("mount", this.props.serverDetail);
     this.setState({ userName: server.Username });
@@ -34,8 +41,11 @@ class ServerDetailNew extends Component {
 
   showNodeNames = () => {
     let arr = [];
-    this.props.nodeInfo.map(node => {
-      if (this.props.serverId === node.Server_Id && node.Node_Type === "MSC") {
+    this.state.nodeInfo.map(node => {
+      if (
+        this.props.serverId === node.Server_Id &&
+        node.Node_Type === this.state.nodeType
+      ) {
         arr.push(node.Node_Name);
       }
     });
@@ -43,13 +53,19 @@ class ServerDetailNew extends Component {
   };
 
   componentWillReceiveProps(nextProps) {
-    console.log("receive props", nextProps);
+    //console.log("receive props", nextProps);
+    // if (this.state.newNodeName.length !== 0) {
+    //   this.setState({ saveDialog: true });
+
+    // } else{
+    console.log("in props");
     this.setState({ userEntry: this.props.userEntry });
+    //this.setState({ newNodeName: [] });
     if (this.props.serverDetail === nextProps.serverDetail) {
       this.setState({ isSave: false });
       let server = this.props.serverDetail;
-      console.log("change", server);
-      this.setState({ nodeType: "MSC" });
+      // console.log("change", server);
+      this.setState({ nodeType: this.state.nodeType });
       this.setState({ userName: server.Username });
       this.setState({ password: server.Password });
       this.setState({ ipAddress: server.IPAddress });
@@ -59,6 +75,7 @@ class ServerDetailNew extends Component {
         console.log("nodenames", this.state.nodeNameArray)
       );
     }
+    // }
   }
 
   onHide = () => {
@@ -66,11 +83,20 @@ class ServerDetailNew extends Component {
   };
 
   onNodeTypeChange = nodetype => {
+    if (this.state.newNodeName.length !== 0) {
+      this.setState({ saveDialog: true });
+      nextNodeType = nodetype;
+    } else {
+      this.handleNodeChange(nodetype);
+    }
+  };
+
+  handleNodeChange = nodetype => {
     this.setState({ nodeType: nodetype });
 
     let arr = [];
-    this.props.nodeInfo.map(node => {
-      console.log("node", node, "id", node.Server_Id);
+    this.state.nodeInfo.map(node => {
+      // console.log("node", node, "id", node.Server_Id);
       if (
         this.props.serverId === node.Server_Id &&
         node.Node_Type === nodetype
@@ -89,7 +115,7 @@ class ServerDetailNew extends Component {
 
   confirmNodeName = () => {
     let alreadyExist = false;
-    this.props.nodeInfo.map(node => {
+    this.state.nodeInfo.map(node => {
       console.log(node);
       if (!alreadyExist) {
         if (node.Node_Name === this.state.nodeValue) {
@@ -110,10 +136,16 @@ class ServerDetailNew extends Component {
 
     if (!alreadyExist) {
       this.setState({ isExist: false });
+      console.log("node", this.state.newNodeName);
       this.state.nodeNameArray.push(this.state.nodeValue);
       this.state.newNodeName.push(this.state.nodeValue);
       this.setState({ nodeNameArray: this.state.nodeNameArray });
-      this.setState({ newNodeName: this.state.newNodeName });
+      this.setState(
+        { newNodeName: this.state.newNodeName }
+        //  () =>
+        // this.props.addNode(this.state.nodeValue)
+      );
+      this.props.addNode(this.state.nodeValue, this.state.nodeType);
       this.onHide();
     }
   };
@@ -125,42 +157,62 @@ class ServerDetailNew extends Component {
 
   handleSubmit = e => {
     e.preventDefault();
+    if (this.state.saveDialog) {
+      this.setState({ saveDialog: false });
+    }
+    if (this.props.saveServer) {
+      this.props.closeServerDialog();
+    }
     console.log(this.state.userEntry);
+    console.log("new node", this.state.newNodeName);
     if (this.state.userEntry === "old") {
       let server = this.props.serverDetail;
-      if (this.state.userName === server.Username) {
-        if (this.state.password === server.Password) {
-          if (this.state.ipAddress === server.IPAddress) {
-            this.setState({ isError: false });
-            axios
-              .post("http://localhost:5001/insert/connectivity/node-details", {
-                Server_Id: this.props.serverId,
-                Node_Name: this.state.newNodeName,
-                Node_Type: this.state.nodeType
-              })
-              .then(res => {
-                console.log(res);
-                this.setState({ isSave: true });
-                // setUserName("");
-                // setPassword("");
-                // setIPAddress("");
-                // setNodeNameArray([]);
-              });
-          } else {
-            this.setState({ isError: true });
-          }
-        } else {
-          this.setState({ isError: true });
-        }
-      } else {
-        this.setState({ isError: true });
-      }
+      // if (this.state.userName === server.Username) {
+      // if (this.state.password === server.Password) {
+      //   if (this.state.ipAddress === server.IPAddress) {
+      this.setState({ isError: false });
+      axios
+        .post("http://localhost:5001/insert/connectivity/node-details", {
+          Server_Id: this.props.serverId,
+          Node_Name: this.state.newNodeName,
+          Node_Type: this.state.nodeType
+        })
+        .then(res => {
+          console.log(res);
+          this.setState({ isSave: true });
+          this.setState({ newNodeName: [] });
+          this.props.deleteNode();
+          axios
+            .get("http://localhost:5001/get/connectivity/node-details")
+            .then(res => {
+              this.setState({ nodeInfo: res.data });
+              //alert("Saved");
+              if (!nextNodeType) {
+                nextNodeType = this.state.nodeType;
+              }
+              this.handleNodeChange(nextNodeType);
+            });
+          // setUserName("");
+          // setPassword("");
+          // setIPAddress("");
+          // setNodeNameArray([]);
+        });
+      //  }
+      //   else {
+      //     this.setState({ isError: true });
+      //   }
+      // } else {
+      //   this.setState({ isError: true });
+      // }
+      //   } else {
+      //     this.setState({ isError: true });
+      //   }
     } else if (this.state.userEntry === "New") {
       console.log("new entry");
       console.log(this.state);
       let serverRequest = {
         Server_Name: this.props.serverName,
-        Server_Id: this.props.serverId.toString(),
+        Server_Id: this.props.serverId,
         Username: this.state.userName,
         Password: this.state.password,
         IPAddress: this.state.ipAddress
@@ -184,13 +236,34 @@ class ServerDetailNew extends Component {
               })
               .then(resp => {
                 console.log(resp);
+                this.setState({ newNodeName: [] });
+                this.props.deleteNode();
+                axios
+                  .get("http://localhost:5001/get/connectivity/node-details")
+                  .then(res => {
+                    this.setState({ nodeInfo: res.data });
+                  });
               });
           }
         });
     }
   };
 
+  onHideSave = () => {
+    if (this.state.saveDialog) {
+      this.setState({ saveDialog: false });
+      console.log("next node", nextNodeType);
+      this.handleNodeChange(nextNodeType);
+    }
+    this.setState({ newNodeName: [] });
+    console.log("nodetype", this.state.nodeType);
+    if (this.props.saveServer) {
+      this.props.closeServerDialog();
+    }
+  };
+
   render() {
+    console.log("nodetype", this.state.nodeType);
     const displayNodeNames = this.state.nodeNameArray.map((name, index) => {
       console.log("in display node");
       return <span key={index}>{name}</span>;
@@ -201,19 +274,43 @@ class ServerDetailNew extends Component {
         <Button onClick={this.onHide}>Cancel </Button>
       </div>
     );
+    const footer1 = (
+      <div>
+        <Button onClick={this.handleSubmit}>Yes </Button>
+        <Button onClick={this.onHideSave}>No</Button>
+      </div>
+    );
     return (
       <React.Fragment>
         <div style={{ margin: 20, padding: 20, border: "2px solid #D3D3D3" }}>
+          <p
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              marginBottom: 10,
+              fontWeight: "bold"
+            }}
+          >
+            Server Name : {this.props.serverName}
+          </p>
+
           {this.state.isError ? (
             <p style={{ marginBottom: 10, color: "red" }}>
               invalid credentials!
             </p>
           ) : null}
           {this.state.isSave ? (
-            <p style={{ marginBottom: 10, color: "green", fontWeight: "bold" }}>
+            <p
+              style={{
+                marginBottom: 10,
+                color: "green",
+                fontWeight: "bold"
+              }}
+            >
               Data Saved!
             </p>
           ) : null}
+
           <Form onSubmit={this.handleSubmit}>
             <Form.Group as={Row}>
               <Form.Label column sm={2}>
@@ -285,18 +382,36 @@ class ServerDetailNew extends Component {
                 </Form.Control>
               </Col>
               <Col sm={4}>
-                {/* <Form.Control as="textarea" rows="3" /> */}
                 <Card
                   style={{
-                    width: "12rem",
-                    minHeight: "8rem",
-                    maxHeight: "8rem",
+                    width: "14rem",
+                    minHeight: "10rem",
+                    maxHeight: "10rem",
                     overflow: "auto"
                   }}
                 >
+                  <Card.Header>
+                    <div
+                      style={{
+                        flexDirection: "row",
+                        display: "flex",
+                        justifyContent: "center"
+                      }}
+                    >
+                      <i
+                        className="fa fa-plus iconStyle"
+                        style={{ cursor: "pointer", marginRight: 20 }}
+                        //data-toggle="tooltip"
+                        //title="Hooray!"
+                        onClick={this.addNodeNames}
+                      />
+                      <UploadExcel />
+                    </div>
+                  </Card.Header>
                   {displayNodeNames}
                 </Card>
-                <Form.Group as={Row}>
+
+                {/* <Form.Group as={Row}>
                   <Col sm={4}>
                     <Button style={{ margin: 10 }} onClick={this.addNodeNames}>
                       Add
@@ -305,13 +420,19 @@ class ServerDetailNew extends Component {
                   <Col sm={2}>
                     <UploadExcel />
                   </Col>
-                </Form.Group>
+                </Form.Group> */}
               </Col>
             </Form.Group>
-            <Row>
+            {/* <Row>
               <Col sm={3}></Col>
               <Button type="submit">Save</Button>
-            </Row>
+            </Row> */}
+            <Form.Group as={Row}>
+              <Col sm={2} />
+              <Col sm={6}>
+                <Button type="submit">Save</Button>
+              </Col>
+            </Form.Group>
           </Form>
         </div>
         <Dialog
@@ -332,6 +453,24 @@ class ServerDetailNew extends Component {
             value={this.state.nodeValue}
             onChange={evt => this.setState({ nodeValue: evt.target.value })}
           />
+        </Dialog>
+        <Dialog
+          visible={this.state.saveDialog}
+          style={{ width: "30vw" }}
+          closable={false}
+          footer={footer1}
+          onHide={this.onHideSave}
+        >
+          Do you want to save changes?
+        </Dialog>
+        <Dialog
+          visible={this.props.saveServer}
+          style={{ width: "30vw" }}
+          closable={false}
+          footer={footer1}
+          onHide={this.props.closeServerDialog}
+        >
+          Do you want to save changes?
         </Dialog>
       </React.Fragment>
     );

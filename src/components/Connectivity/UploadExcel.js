@@ -40,9 +40,14 @@ class UploadExcel extends Component {
           }}
           style={{ display: "none" }}
         />
-        <Button style={{ margin: 10 }} onClick={this.handleClick}>
+        {/* <Button style={{ margin: 10 }} onClick={this.handleClick}>
           Upload
-        </Button>
+        </Button> */}
+        <i
+          className="fa fa-upload iconStyle"
+          style={{ cursor: "pointer" }}
+          onClick={this.handleClick}
+        />
       </React.Fragment>
     );
   }

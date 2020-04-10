@@ -7,66 +7,66 @@ class DeleteDilog extends Component {
     super(props);
     this.state = {
       visible: true,
-      category: [],
+      category: "Select",
       isError: false
     };
   }
 
   onDelete = () => {
-    console.log("delete", this.state.category);
     if (this.state.category === "Select") {
       alert("Please Select one to delete");
     } else {
       let isDelete = false;
       console.log("value", this.state.category);
-      this.state.category.map(value => {
-        this.props.tableDetail.map(document => {
-          if (document.TopId === value) {
-            if (!isDelete) {
-              isDelete = true;
-            }
+      this.props.tableDetail.map(document => {
+        if (document.TopId === this.state.category) {
+          if (!isDelete) {
+            isDelete = true;
           }
-        });
+        }
       });
-
       if (isDelete) {
         this.setState({ isError: true });
       } else {
         this.setState({ isError: false });
-        //let reqVal = parseInt(this.state.category);
-        // console.log("reqVal", reqVal);
+        let reqVal = parseInt(this.state.category);
+        console.log("reqVal", reqVal);
         let request = {};
-        request["value"] = this.state.category;
+        request["id"] = reqVal;
         axios
-          .delete("http://localhost:5001/delete/connectivity/multiple", {
+          .delete("http://localhost:5001/delete/connectivity", {
             data: request
           })
           .then(response => {
             console.log("del res", response);
             this.props.updateItem();
-            this.state.category.map(server => {
-              if (this.props.serverId === server) {
-                this.props.updateServer();
-              }
-            });
           });
-
+        axios
+          .delete("http://localhost:5001/delete/connectivity/server", {
+            data: request
+          })
+          .then(response => {
+            console.log("del res", response);
+          });
+        axios
+          .delete("http://localhost:5001/delete/connectivity/node", {
+            data: request
+          })
+          .then(response => {
+            console.log("del res", response);
+            console.log("serverid", this.props.serverId + "reqval", reqVal);
+            if (this.props.serverId === reqVal) {
+              console.log("same");
+              this.props.updateServer();
+            }
+          });
         this.props.onHide();
       }
     }
   };
 
-  handleCategoryChange = e => {
-    var options = e.target.options;
-    var value = [];
-    for (var i = 0, l = options.length; i < l; i++) {
-      if (options[i].selected) {
-        value.push(parseInt(options[i].value));
-        console.log("value change", value);
-      }
-    }
-
-    this.setState({ category: value });
+  handleCategoryChange = category => {
+    this.setState({ category: category });
   };
 
   render() {
@@ -92,7 +92,7 @@ class DeleteDilog extends Component {
           <select
             name="category"
             value={this.state.category}
-            onChange={event => this.handleCategoryChange(event)}
+            onChange={event => this.handleCategoryChange(event.target.value)}
             multiple
           >
             <option value="Select">Select</option>
