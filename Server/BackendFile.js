@@ -1,3 +1,5 @@
+const dotenv = require("dotenv");
+dotenv.config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
@@ -8,11 +10,28 @@ app.use(cors());
 var XLSX = require("xlsx");
 var fileupload = require("express-fileupload");
 app.use(fileupload());
+const passport = require("passport");
+const passportJWT = require("passport-jwt");
+const JwtStrategy = passportJWT.Strategy;
+const ExtractJwt = passportJWT.ExtractJwt;
+const jwt = require("jsonwebtoken");
+
+const opts = {
+  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+  secretOrKey: process.env.SECRET_OR_KEY,
+};
+
+const strategy = new JwtStrategy(opts, (payload, next) => {
+  const user = null;
+  next(null, user);
+});
+passport.use(strategy);
+app.use(passport.initialize());
 
 var MongoClient = require("mongodb").MongoClient;
 var url = "mongodb://localhost:27017/ReactDatabase";
 
-MongoClient.connect(url, function(err, db) {
+MongoClient.connect(url, function (err, db) {
   var dbo = db.db("ReactDatabase");
   if (err) throw err;
   console.log("connected");
@@ -23,7 +42,7 @@ MongoClient.connect(url, function(err, db) {
     var flowSteps = req.body.data.steps;
     dbo
       .collection("FlowListCollection")
-      .insertOne({ name: flowName, steps: flowSteps }, function(err, res) {
+      .insertOne({ name: flowName, steps: flowSteps }, function (err, res) {
         if (err) throw err;
       });
     res.send("inserted into flowlistcollection");
@@ -34,7 +53,7 @@ MongoClient.connect(url, function(err, db) {
     dbo
       .collection("FlowListCollection")
       .find({})
-      .toArray(function(err, flowlist) {
+      .toArray(function (err, flowlist) {
         if (err) throw err;
         res.send(flowlist);
       });
@@ -46,7 +65,7 @@ MongoClient.connect(url, function(err, db) {
     var step = req.body.data.step;
     dbo
       .collection("FlowListCollection")
-      .updateOne({ name: flowName }, { $push: { steps: step } }, function(
+      .updateOne({ name: flowName }, { $push: { steps: step } }, function (
         err,
         res
       ) {
@@ -61,13 +80,27 @@ MongoClient.connect(url, function(err, db) {
     var step = req.body.step;
     dbo
       .collection("FlowListCollection")
-      .updateOne({ name: flowName }, { $pull: { steps: step } }, function(
+      .updateOne({ name: flowName }, { $pull: { steps: step } }, function (
         err,
         res
       ) {
         if (err) throw err;
       });
     res.send("step deleted");
+  });
+
+  //delete flowList from FlowListCollection
+  app.delete("/delete/flows/flowList", (req, res) => {
+    console.log("req", req.body);
+    var flowname = req.body.flowName;
+
+    dbo
+      .collection("FlowListCollection")
+      .deleteOne({ name: flowname }, function (err, res) {
+        if (err) throw err;
+      });
+
+    res.send("deleted");
   });
 
   // app.put("/update-after-delete/flows/steps", (req, res) => {
@@ -99,7 +132,7 @@ MongoClient.connect(url, function(err, db) {
     Level1.push(levelName);
     dbo
       .collection("PanelMenuCollection")
-      .insertOne({ label: req.body.level1 }, function(err, res) {
+      .insertOne({ label: req.body.level1 }, function (err, res) {
         if (err) throw err;
       });
     res.send("Inserted into Level1");
@@ -110,7 +143,7 @@ MongoClient.connect(url, function(err, db) {
     dbo
       .collection("PanelMenuCollection")
       .find({})
-      .toArray(function(err, item) {
+      .toArray(function (err, item) {
         if (err) throw err;
         res.send(item);
       });
@@ -139,7 +172,7 @@ MongoClient.connect(url, function(err, db) {
       .updateOne(
         { label: req.body.level1 },
         { $push: { Level2: levelName } },
-        function(err, res) {
+        function (err, res) {
           if (err) throw err;
         }
       );
@@ -155,7 +188,7 @@ MongoClient.connect(url, function(err, db) {
       .updateOne(
         { label: itemLabel },
         { $push: { Servers: serverDetail } },
-        function(err, res) {
+        function (err, res) {
           if (err) throw err;
         }
       );
@@ -204,7 +237,7 @@ MongoClient.connect(url, function(err, db) {
       .updateOne(
         { label: level1_Label, Level2: level2_Label },
         { $push: { "Level2.$.Servers": serverDetail } },
-        function(err, res) {
+        function (err, res) {
           if (err) throw err;
         }
       );
@@ -220,7 +253,7 @@ MongoClient.connect(url, function(err, db) {
     dbo
       .collection("PanelMenuCollectionNew")
       .find({})
-      .toArray(function(err, item) {
+      .toArray(function (err, item) {
         if (err) throw err;
         res.send(item);
       });
@@ -255,7 +288,7 @@ MongoClient.connect(url, function(err, db) {
     dbo
       .collection("PanelMenuCollectionNew")
       .find({})
-      .toArray(function(err, result) {
+      .toArray(function (err, result) {
         console.log(result);
         if (err) throw err;
         var i = result.length;
@@ -266,7 +299,7 @@ MongoClient.connect(url, function(err, db) {
         var insertDetails = Object.assign({}, Topid, id, label, type);
         dbo
           .collection("PanelMenuCollectionNew")
-          .insertOne(insertDetails, function(err, res) {
+          .insertOne(insertDetails, function (err, res) {
             if (err) throw err;
           });
       });
@@ -281,7 +314,7 @@ MongoClient.connect(url, function(err, db) {
     dbo
       .collection("PanelMenuCollectionNew")
       .find({})
-      .toArray(function(err, result) {
+      .toArray(function (err, result) {
         console.log(result);
         if (err) throw err;
         var i = result.length;
@@ -292,7 +325,7 @@ MongoClient.connect(url, function(err, db) {
         var insertDetails = Object.assign({}, Topid, id, label, type);
         dbo
           .collection("PanelMenuCollectionNew")
-          .insertOne(insertDetails, function(err, res) {
+          .insertOne(insertDetails, function (err, res) {
             if (err) throw err;
           });
       });
@@ -307,7 +340,7 @@ MongoClient.connect(url, function(err, db) {
     dbo
       .collection("PanelMenuCollectionNew")
       .find({})
-      .toArray(function(err, result) {
+      .toArray(function (err, result) {
         console.log(result);
         if (err) throw err;
         var i = result.length;
@@ -318,7 +351,7 @@ MongoClient.connect(url, function(err, db) {
         var insertDetails = Object.assign({}, Topid, id, label, type);
         dbo
           .collection("PanelMenuCollectionNew")
-          .insertOne(insertDetails, function(err, res) {
+          .insertOne(insertDetails, function (err, res) {
             if (err) throw err;
           });
       });
@@ -332,7 +365,7 @@ MongoClient.connect(url, function(err, db) {
     console.log("id", id);
     dbo
       .collection("PanelMenuCollectionNew")
-      .deleteOne({ ID: id }, function(err, res) {
+      .deleteOne({ ID: id }, function (err, res) {
         if (err) throw err;
       });
 
@@ -345,7 +378,7 @@ MongoClient.connect(url, function(err, db) {
     var id = req.body.id;
     dbo
       .collection("ServerDetailsCollection")
-      .deleteOne({ Server_Id: id.toString() }, function(err, res) {
+      .deleteOne({ Server_Id: id.toString() }, function (err, res) {
         if (err) throw err;
       });
     res.send("deleted from server collection");
@@ -357,7 +390,7 @@ MongoClient.connect(url, function(err, db) {
     var id = req.body.id;
     dbo
       .collection("NodeCollection")
-      .deleteMany({ Server_Id: id }, function(err, res) {
+      .deleteMany({ Server_Id: id }, function (err, res) {
         if (err) throw err;
       });
     res.send("deleted from node collection");
@@ -368,15 +401,15 @@ MongoClient.connect(url, function(err, db) {
     console.log(request);
     dbo
       .collection("PanelMenuCollectionNew")
-      .deleteMany({ ID: { $in: request } }, function(err, res) {
+      .deleteMany({ ID: { $in: request } }, function (err, res) {
         if (err) throw err;
         dbo
           .collection("ServerDetailsCollection")
-          .deleteMany({ Server_Id: { $in: request } }, function(err, res) {
+          .deleteMany({ Server_Id: { $in: request } }, function (err, res) {
             if (err) throw err;
             dbo
               .collection("NodeCollection")
-              .deleteMany({ Server_Id: { $in: request } }, function(err, res) {
+              .deleteMany({ Server_Id: { $in: request } }, function (err, res) {
                 if (err) throw err;
               });
           });
@@ -389,7 +422,7 @@ MongoClient.connect(url, function(err, db) {
     var request = req.body;
     dbo
       .collection("ServerDetailsCollection")
-      .insertOne(request, function(err, res) {
+      .insertOne(request, function (err, res) {
         if (err) throw err;
       });
     res.send("Inserted into Server collection");
@@ -399,7 +432,7 @@ MongoClient.connect(url, function(err, db) {
     dbo
       .collection("ServerDetailsCollection")
       .find({})
-      .toArray(function(err, result) {
+      .toArray(function (err, result) {
         if (err) throw err;
         res.send(result);
       });
@@ -412,12 +445,12 @@ MongoClient.connect(url, function(err, db) {
     dbo
       .collection("ServerDetailsCollection")
       .find({ Server_Name: serverName })
-      .toArray(function(err, result) {
+      .toArray(function (err, result) {
         if (err) throw err;
         var nodeTypeArray = [];
         nodeTypeArray = result[0].Node_Type;
         res.send(nodeTypeArray);
-        nodeTypeArray.map(node => {
+        nodeTypeArray.map((node) => {
           if (node.Name === nodeType) {
             node.Node_Name.push(nodeName);
             console.log("updated node", nodeTypeArray);
@@ -426,7 +459,7 @@ MongoClient.connect(url, function(err, db) {
               .updateOne(
                 { Server_Name: serverName },
                 { $set: { Node_Type: nodeTypeArray } },
-                function(err, res) {
+                function (err, res) {
                   if (err) throw err;
                 }
               );
@@ -444,17 +477,18 @@ MongoClient.connect(url, function(err, db) {
       req_Obj = {
         Server_Id: req.body.Server_Id,
         Node_Name: nodename,
-        Node_Type: req.body.Node_Type
+        Node_Type: req.body.Node_Type,
+        Vendor: req.body.Vendor,
       };
       request.push(req_Obj);
     });
     dbo
       .collection("NodeCollection")
-      .createIndex({ Node_Name: 1 }, { unique: true }, function(err, resp) {
+      .createIndex({ Node_Name: 1 }, { unique: true }, function (err, resp) {
         if (err) throw err;
       });
     console.log(request);
-    dbo.collection("NodeCollection").insertMany(request, function(err, res) {
+    dbo.collection("NodeCollection").insertMany(request, function (err, res) {
       if (err) throw err;
     });
     res.send("Inserted into node collection");
@@ -465,7 +499,7 @@ MongoClient.connect(url, function(err, db) {
     dbo
       .collection("NodeCollection")
       .find({})
-      .toArray(function(err, result) {
+      .toArray(function (err, result) {
         if (err) throw err;
         res.send(result);
       });
@@ -478,10 +512,202 @@ MongoClient.connect(url, function(err, db) {
     var workbook = XLSX.readFile(fileName);
     var sheetList = workbook.SheetNames;
     var xlData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetList[0]]);
-    dbo.collection("NodeCollection").insertMany(xlData, function(err, res) {
+    dbo.collection("NodeCollection").insertMany(xlData, function (err, res) {
       if (err) throw err;
     });
     res.send("File uploaded successfully");
+  });
+
+  //post action details - "Run a command" into db
+  app.get("/flow/content/action", (req, res) => {
+    var flowname = req.query.flowName;
+    var stepno = req.query.stepNo;
+    var type = req.query.type;
+    dbo
+      .collection("FlowContent")
+      .find({ Flow: flowname, Step: stepno })
+      .toArray(function (err, result) {
+        if (err) throw err;
+        var reqObj = {},
+          actionObj = {};
+        let action = [];
+        if (type === "Run a Command") {
+          actionObj = {
+            Type: type,
+            Command: req.query.command,
+          };
+        } else {
+          actionObj = {
+            Type: type,
+            File: req.query.file,
+          };
+        }
+        if (result.length == 0) {
+          action.push(actionObj);
+          reqObj = {
+            Flow: flowname,
+            Step: stepno,
+            Action: action,
+          };
+          dbo.collection("FlowContent").insertOne(reqObj, function (err, res) {
+            if (err) throw err;
+          });
+        } else {
+          dbo
+            .collection("FlowContent")
+            .updateOne(
+              { Flow: flowname, Step: stepno },
+              { $push: { Action: actionObj } },
+              function (err, res) {
+                if (err) throw err;
+              }
+            );
+        }
+        res.send("inserted successfully");
+      });
+  });
+  //post link details into db
+  app.get("/flow/content/link", (req, res) => {
+    var flowname = req.query.flowName;
+    var stepno = req.query.stepNo;
+    dbo
+      .collection("FlowContent")
+      .find({ Flow: flowname, Step: stepno })
+      .toArray(function (err, result) {
+        if (err) throw err;
+        var reqObj = {},
+          linkObj = {};
+        let link = [];
+        linkObj = {
+          Condition: req.query.condition,
+          NextStep: req.query.nextStep,
+        };
+        if (result.length == 0) {
+          link.push(linkObj);
+          reqObj = {
+            Flow: flowname,
+            Step: stepno,
+            Link: link,
+          };
+          dbo.collection("FlowContent").insertOne(reqObj, function (err, res) {
+            if (err) throw err;
+          });
+        } else {
+          dbo
+            .collection("FlowContent")
+            .updateOne(
+              { Flow: flowname, Step: stepno },
+              { $push: { Link: linkObj } },
+              function (err, res) {
+                if (err) throw err;
+              }
+            );
+        }
+        res.send("inserted successfully");
+      });
+  });
+
+  //delete action details from FLowContent
+  app.delete("/delete/flow/action", (req, res) => {
+    console.log("req", req.body);
+    let type = req.body.Type;
+    let delObj = {};
+    if (type === "Run a Command")
+      delObj = {
+        Type: type,
+        Command: req.body.Command,
+      };
+    if (type === "Parse the Output")
+      delObj = {
+        Type: type,
+        File: req.body.File,
+      };
+
+    dbo
+      .collection("FlowContent")
+      .updateOne(
+        { Flow: req.body.flowname, Step: req.body.stepNo },
+        { $pull: { Action: delObj } },
+        function (err, res) {
+          if (err) throw err;
+        }
+      );
+    res.send("deleted");
+  });
+
+  //delete link details from FLowContent
+  app.delete("/delete/flow/link", (req, res) => {
+    console.log("req", req.body);
+    let delObj = {};
+    delObj = {
+      Condition: req.body.condition,
+      NextStep: req.body.step,
+    };
+    dbo
+      .collection("FlowContent")
+      .updateOne(
+        { Flow: req.body.flowname, Step: req.body.stepNo },
+        { $pull: { Link: delObj } },
+        function (err, res) {
+          if (err) throw err;
+        }
+      );
+    res.send("deleted");
+  });
+
+  // check login credentials
+
+  app.post("/login", (req, res) => {
+    var username = req.body.username;
+    var password = req.body.password;
+    dbo
+      .collection("UserCollection")
+      .find({ Username: username, Password: password })
+      .toArray(function (err, result) {
+        if (err) throw err;
+        if (result.length !== 0) {
+          res.send("valid");
+        } else {
+          res.send("invalid");
+        }
+      });
+  });
+  // Generate User token
+  app.post("/generate-token", (req, res) => {
+    // if (!req.body.Username || !req.body.Password) {
+    //   return res.status(500).send("No fields");
+    // }
+    try {
+      dbo
+        .collection("UserCollection")
+        .find({
+          Username: req.body.username,
+          Password: req.body.password,
+        })
+        .toArray(function (err, result) {
+          if (err) throw err;
+
+          if (result.length != 0) {
+            const payload = { id: req.body.username };
+            console.log(payload);
+            const token = jwt.sign(payload, process.env.SECRET_OR_KEY);
+
+            dbo
+              .collection("TokenCollection")
+              .insertOne(
+                { Username: req.body.username, Token: token },
+                function (err, res) {
+                  if (err) throw err;
+                }
+              );
+            res.send({ Token: token });
+          } else {
+            res.send("Invalid");
+          }
+        });
+    } catch (err) {
+      res.status(500).send("Can't read property");
+    }
   });
 });
 

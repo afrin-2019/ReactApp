@@ -108,3 +108,32 @@
     },
     ]
 }
+..................................
+
+{
+        "label":"Delhi",
+        "Server":[
+            {
+                "id":"101",
+                "nodename":"oss1"
+            }
+        ],  
+        "Level2":[
+            {
+                "Label":"North"
+                "Server":[
+                    {
+                        "id":"102",
+                        "nodename":"Oss1"
+                    },
+                    {
+                        "id":"103",
+                        "nodename":"oss2"
+                    }
+                ]
+            },
+            {
+                "Lable":"South"
+            }
+        ]   
+    },

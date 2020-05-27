@@ -61,6 +61,7 @@ class DeleteStepDialog extends Component {
           var stepNo = step.replace(/\D/g, "");
           console.log("stepno", stepNo + "selected step", selectedStepNo);
           let updated_stepNo;
+          //insert a new step
           if (step === this.state.steps) {
             updated_stepNo = ++stepNo;
             step = "Step" + updated_stepNo;
@@ -72,7 +73,7 @@ class DeleteStepDialog extends Component {
         });
       }
     });
-
+    //edit the other step after insertion
     flowList.map(flow => {
       if (flow.name === this.props.flowSelected) {
         flow.steps.map((step, index) => {

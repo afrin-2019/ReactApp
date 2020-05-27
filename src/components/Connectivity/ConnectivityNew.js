@@ -9,6 +9,8 @@ import DeleteDialog from "./DeleteDialog";
 import axios from "axios";
 import ServerDetails from "./ServerDetails";
 import ServerDetailNew from "./ServerDetailNew";
+import SideNavBar from "../SideNavBar";
+import LogOut from "../LogOut";
 let newNodeName = [],
   nodetype,
   nextServer,
@@ -42,16 +44,16 @@ class Connectivity extends Component {
         icon: "fa fa-fw fa-server",
         command: () => {
           this.onaddNewServer();
-        }
+        },
       },
       {
         label: "New Level",
         icon: "fa fa-fw fa-level-down",
         command: () => {
           this.onaddNewLevel();
-        }
-      }
-    ]
+        },
+      },
+    ],
   };
 
   componentDidMount() {
@@ -61,7 +63,7 @@ class Connectivity extends Component {
   refreshPanel = () => {
     axios
       .get("http://localhost:5001/get/connectivity/newpanelmenu")
-      .then(res => {
+      .then((res) => {
         this.setState({ tableDetail: res.data });
         let panelMenu = [...res.data];
         this.setState({ panelMenu }, () => console.log("panelMenu", panelMenu));
@@ -70,7 +72,7 @@ class Connectivity extends Component {
           newItem,
           levelInfo,
           levelInfoList = [];
-        panelMenu.map(item => {
+        panelMenu.map((item) => {
           //console.log("item", item);
 
           if (item.TopId === "000") {
@@ -90,7 +92,7 @@ class Connectivity extends Component {
             if (item.TopId !== "000" && item.Type === "level") {
               // console.log("levelInfo", this.state.topLevel);
               // console.log("topid", item.TopId);
-              this.state.topLevel.map(detail => {
+              this.state.topLevel.map((detail) => {
                 console.log(detail.id + "" + item.TopId);
                 if (detail.id.toString() === item.TopId) {
                   // console.log("level1", detail.label);
@@ -119,9 +121,9 @@ class Connectivity extends Component {
                 item_to_insert = Object.assign(
                   { label: newItem.Label },
                   {
-                    command: event => {
+                    command: (event) => {
                       this.showServerDetails(event.item.label, newItem.ID);
-                    }
+                    },
                   },
                   { value: newItem.ID }
                 );
@@ -137,9 +139,9 @@ class Connectivity extends Component {
                     item_to_insert = Object.assign(
                       { label: newItem.Label },
                       {
-                        command: event => {
+                        command: (event) => {
                           this.showServerDetails(event.item.label, newItem.ID);
-                        }
+                        },
                       },
                       { value: newItem.ID }
                     );
@@ -160,7 +162,7 @@ class Connectivity extends Component {
   refreshPanel1 = () => {
     axios
       .get("http://localhost:5001/get/connectivity/newpanelmenu")
-      .then(response => {
+      .then((response) => {
         this.setState({ tableDetail: response.data });
         // console.log("records", response.data[response.data.length - 1]);
         let newItem = response.data[response.data.length - 1];
@@ -171,9 +173,9 @@ class Connectivity extends Component {
             item_to_insert = Object.assign(
               { label: newItem.Label },
               {
-                command: event => {
+                command: (event) => {
                   this.showServerDetails(event.item.label, newItem.ID);
-                }
+                },
               },
               { value: newItem.ID }
             );
@@ -186,9 +188,9 @@ class Connectivity extends Component {
                 item_to_insert = Object.assign(
                   { label: newItem.Label },
                   {
-                    command: event => {
+                    command: (event) => {
                       this.showServerDetails(event.item.label, newItem.ID);
-                    }
+                    },
                   },
                   { value: newItem.ID }
                 );
@@ -226,8 +228,8 @@ class Connectivity extends Component {
     this.setState({ nodeType: "MSC" });
     axios
       .get("http://localhost:5001/get/connectivity/server-details")
-      .then(response => {
-        response.data.map(server => {
+      .then((response) => {
+        response.data.map((server) => {
           console.log(server);
           if (server.Server_Id === id) {
             this.setState({ serverInfo: server });
@@ -242,21 +244,21 @@ class Connectivity extends Component {
               Server_Id: id,
               Username: "",
               Password: "",
-              IPAddress: ""
-            }
+              IPAddress: "",
+            },
           });
           this.setState({ userEntry: "New" });
         }
         axios
           .get("http://localhost:5001/get/connectivity/node-details")
-          .then(res => {
+          .then((res) => {
             this.setState({ nodes: res.data });
             this.setState({ serverDetails: true });
           });
       });
   };
 
-  updateItems = item => {
+  updateItems = (item) => {
     this.setState({ items: item });
   };
 
@@ -268,7 +270,7 @@ class Connectivity extends Component {
   displayDropdown = () => {
     let option = [];
     let i = 0;
-    this.state.items.map(item => {
+    this.state.items.map((item) => {
       i++;
       option.push(
         <option
@@ -280,7 +282,7 @@ class Connectivity extends Component {
         </option>
       );
       if (item.items) {
-        item.items.map(item1 => {
+        item.items.map((item1) => {
           i++;
           option.push(
             <option key={i} value={item1.value}>
@@ -288,7 +290,7 @@ class Connectivity extends Component {
             </option>
           );
           if (item1.items) {
-            item1.items.map(item2 => {
+            item1.items.map((item2) => {
               i++;
               option.push(
                 <option key={i} value={item2.value}>
@@ -307,7 +309,7 @@ class Connectivity extends Component {
   addServerDropdown = () => {
     let option = [];
     let i = 0;
-    this.state.items.map(item => {
+    this.state.items.map((item) => {
       // console.log("itemname", item.label + "value" + item.value);
       if (item.items) {
         i++;
@@ -318,7 +320,7 @@ class Connectivity extends Component {
         );
 
         if (item.items) {
-          item.items.map(item1 => {
+          item.items.map((item1) => {
             // console.log("inner item", item1);
             if (item1.items) {
               i++;
@@ -338,7 +340,7 @@ class Connectivity extends Component {
   addLevelDropdown = () => {
     let option = [];
     let i = 0;
-    this.state.panelMenu.map(item => {
+    this.state.panelMenu.map((item) => {
       if (item.TopId === "000") {
         i++;
         option.push(
@@ -378,11 +380,11 @@ class Connectivity extends Component {
     }
   };
 
-  onChange = e => {
+  onChange = (e) => {
     this.setState({ textValue: e.target.value });
   };
 
-  handleCategoryChange = category => {
+  handleCategoryChange = (category) => {
     this.setState({ category: category });
   };
 
@@ -394,7 +396,7 @@ class Connectivity extends Component {
     let isExist = false;
     // console.log("id", id);
 
-    this.state.panelMenu.map(item => {
+    this.state.panelMenu.map((item) => {
       //  console.log("item", item);
       if (id === item.TopId) {
         if (item.Label === newItem.label) {
@@ -405,9 +407,9 @@ class Connectivity extends Component {
     return isExist;
   };
 
-  checkServerUniqueness = newItem => {
+  checkServerUniqueness = (newItem) => {
     let isExist = false;
-    this.state.tableDetail.map(item => {
+    this.state.tableDetail.map((item) => {
       if (item.Type === "Server") {
         if (item.Label === newItem.label) {
           isExist = true;
@@ -417,7 +419,7 @@ class Connectivity extends Component {
     return isExist;
   };
 
-  addItemNew = item => {
+  addItemNew = (item) => {
     // console.log(
     //   "openserver",
     //   this.state.showServer + "openlevel",
@@ -438,7 +440,7 @@ class Connectivity extends Component {
     }
   };
 
-  addServer = item => {
+  addServer = (item) => {
     console.log("category", this.state.category);
     let isExist = false;
     // console.log("item to add", item);
@@ -453,16 +455,16 @@ class Connectivity extends Component {
       axios
         .post("http://localhost:5001/insert/connectivity/server/type2", {
           levelID: this.state.category,
-          server: item.label
+          server: item.label,
         })
-        .then(res => {
+        .then((res) => {
           console.log(res);
           this.refreshPanel1();
         });
     }
   };
 
-  addLevel = item => {
+  addLevel = (item) => {
     // console.log("in add level");
     let isExist = false;
     console.log("category", this.state.category);
@@ -476,9 +478,9 @@ class Connectivity extends Component {
         this.setState({ openDialog: false });
         axios
           .post("http://localhost:5001/insert/connectivity/level1/type2", {
-            level1: item.label
+            level1: item.label,
           })
-          .then(res => {
+          .then((res) => {
             console.log("res", res);
             this.refreshPanel();
           });
@@ -494,9 +496,9 @@ class Connectivity extends Component {
         axios
           .post("http://localhost:5001/insert/connectivity/level2/type2", {
             level1ID: this.state.category,
-            level2: item.label
+            level2: item.label,
           })
-          .then(res => {
+          .then((res) => {
             console.log(res);
             this.refreshPanel();
           });
@@ -567,7 +569,7 @@ class Connectivity extends Component {
           <select
             name="category"
             value={this.state.category}
-            onChange={event => this.handleCategoryChange(event.target.value)}
+            onChange={(event) => this.handleCategoryChange(event.target.value)}
           >
             {this.addServerDropdown()}
           </select>
@@ -581,7 +583,7 @@ class Connectivity extends Component {
           <select
             name="category"
             value={this.state.category}
-            onChange={event => this.handleCategoryChange(event.target.value)}
+            onChange={(event) => this.handleCategoryChange(event.target.value)}
           >
             <option value="Add New">Add New</option>
             {this.addLevelDropdown()}
@@ -591,92 +593,96 @@ class Connectivity extends Component {
     }
 
     return (
-      <div style={{ marginLeft: 200 }}>
-        <Menu
-          model={this.state.options}
-          popup={true}
-          ref={el => (this.menu = el)}
-          id="popup_menu"
-          style={{ margin: 5 }}
-        />
-        <Navbar bg="light" expand="lg">
-          <div>
-            <button
-              className="btn btn-sm btn-outline-secondary m-2"
-              onClick={event => this.menu.toggle(event)}
-              aria-controls="popup_menu"
-              aria-haspopup={true}
-            >
-              <i className="fa fa-plus" style={{ margin: 5 }}></i>
-            </button>
-            <button
-              className="btn btn-sm btn-outline-secondary m-2"
-              style={{ marginLeft: 10 }}
-              onClick={this.handleDelete}
-            >
-              <i className="fa fa-trash" style={{ margin: 5 }}></i>
-            </button>
-          </div>
-        </Navbar>
-        <div className="panelbar">
-          <Panel
-            itemList={this.state.items}
-            newEntry={this.state.textValue}
-            category={this.state.category}
-            addEntry={this.state.addEntry}
-            handleEntry={this.changeEntryStatus}
-            handleNewEntry={this.addItemNew}
+      <React.Fragment>
+        <SideNavBar />
+        <div style={{ marginLeft: 200 }}>
+          <Menu
+            model={this.state.options}
+            popup={true}
+            ref={(el) => (this.menu = el)}
+            id="popup_menu"
+            style={{ margin: 5 }}
           />
-        </div>
-        <div style={{ marginLeft: 350 }}>
-          {this.state.serverDetails ? (
-            // <ServerDetails
-            //   serverName={this.state.serverName}
-            //   serverId={this.state.serverId}
-            //   nodeInfo={this.state.nodes}
-            // />
-            <ServerDetailNew
-              serverDetail={this.state.serverInfo}
-              nodeInfo={this.state.nodes}
+          <Navbar bg="light" expand="lg">
+            <div>
+              <button
+                className="btn btn-sm btn-outline-secondary m-2"
+                onClick={(event) => this.menu.toggle(event)}
+                aria-controls="popup_menu"
+                aria-haspopup={true}
+              >
+                <i className="fa fa-plus" style={{ margin: 5 }}></i>
+              </button>
+              <button
+                className="btn btn-sm btn-outline-secondary m-2"
+                style={{ marginLeft: 10 }}
+                onClick={this.handleDelete}
+              >
+                <i className="fa fa-trash" style={{ margin: 5 }}></i>
+              </button>
+            </div>
+            <LogOut />
+          </Navbar>
+          <div className="panelbar">
+            <Panel
+              itemList={this.state.items}
+              newEntry={this.state.textValue}
+              category={this.state.category}
+              addEntry={this.state.addEntry}
+              handleEntry={this.changeEntryStatus}
+              handleNewEntry={this.addItemNew}
+            />
+          </div>
+          <div style={{ marginLeft: 350 }}>
+            {this.state.serverDetails ? (
+              // <ServerDetails
+              //   serverName={this.state.serverName}
+              //   serverId={this.state.serverId}
+              //   nodeInfo={this.state.nodes}
+              // />
+              <ServerDetailNew
+                serverDetail={this.state.serverInfo}
+                nodeInfo={this.state.nodes}
+                serverId={this.state.serverId}
+                userEntry={this.state.userEntry}
+                serverName={this.state.serverName}
+                addNode={this.addNode}
+                deleteNode={this.deleteNode}
+                saveServer={this.state.saveServer}
+                closeServerDialog={this.closeServerDialog}
+                nodeType={this.state.nodeType}
+              />
+            ) : null}
+          </div>
+
+          {this.state.deleteDialog ? (
+            <DeleteDialog
+              onHide={this.closeDeleteDialog}
+              displayDropdown={this.displayDropdown}
+              panelMenu={this.state.items}
+              updateItem={this.refreshPanel}
+              tableDetail={this.state.tableDetail}
               serverId={this.state.serverId}
-              userEntry={this.state.userEntry}
-              serverName={this.state.serverName}
-              addNode={this.addNode}
-              deleteNode={this.deleteNode}
-              saveServer={this.state.saveServer}
-              closeServerDialog={this.closeServerDialog}
-              nodeType={this.state.nodeType}
+              updateServer={this.refreshServer}
             />
           ) : null}
+
+          <Dialog
+            visible={this.state.openDialog}
+            style={{ width: "50vw" }}
+            closable={false}
+            footer={footer1}
+            onHide={this.onHide1}
+          >
+            <div>
+              {this.state.isError ? (
+                <p style={{ color: "red" }}>Already Exist!</p>
+              ) : null}
+              {dialogContent}
+            </div>
+          </Dialog>
         </div>
-
-        {this.state.deleteDialog ? (
-          <DeleteDialog
-            onHide={this.closeDeleteDialog}
-            displayDropdown={this.displayDropdown}
-            panelMenu={this.state.items}
-            updateItem={this.refreshPanel}
-            tableDetail={this.state.tableDetail}
-            serverId={this.state.serverId}
-            updateServer={this.refreshServer}
-          />
-        ) : null}
-
-        <Dialog
-          visible={this.state.openDialog}
-          style={{ width: "50vw" }}
-          closable={false}
-          footer={footer1}
-          onHide={this.onHide1}
-        >
-          <div>
-            {this.state.isError ? (
-              <p style={{ color: "red" }}>Already Exist!</p>
-            ) : null}
-            {dialogContent}
-          </div>
-        </Dialog>
-      </div>
+      </React.Fragment>
     );
   }
 }

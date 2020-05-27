@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 //import Sidebar from "react-sidebar";
 //import { Navbar } from "react-bootstrap";
 class SideNavBar extends React.Component {
@@ -16,21 +17,34 @@ class SideNavBar extends React.Component {
   render() {
     const content = (
       <div>
-        <a href="/">
+        <Link to="/dashboard">
           <i className="fa fa-fw fa-clipboard" style={{ margin: 10 }}></i>
           Dashboard
-        </a>
-        <a href="/connectivity">
+        </Link>
+
+        {/* <a href="/connectivity"> */}
+
+        <Link to="/connectivity">
           <i className="fa fa-fw fa-link" style={{ margin: 10 }}></i>
           Connectivity
-        </a>
-        <a href="/flows">
+        </Link>
+
+        {/* </a> */}
+        {/* <a href="/flows"> */}
+
+        <Link to="/flows">
           <i className="fa fa-fw fa-arrows-h" style={{ margin: 10 }}></i> Flows
-        </a>
-        <a href="/nodes">
+        </Link>
+
+        {/* </a> */}
+        {/* <a href="/nodes"> */}
+
+        <Link to="/nodes">
           <i className="fa fa-fw fa-laptop" style={{ margin: 10 }} />
-          Nodes
-        </a>
+          Nodes{" "}
+        </Link>
+
+        {/* </a> */}
       </div>
     );
     return (

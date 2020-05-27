@@ -9,7 +9,7 @@ class UploadExcel extends Component {
     this.refs.fileUploader.click();
   };
 
-  handleUpload = e => {
+  handleUpload = (e) => {
     file = e.target.files[0];
     console.log("file", file);
     if (file) {
@@ -20,7 +20,7 @@ class UploadExcel extends Component {
       console.log(fd);
       axios
         .post("http://localhost:5001/insert/connectivity/excel-upload", data)
-        .then(res => {
+        .then((res) => {
           console.log(res);
           alert(res.data);
         });
@@ -34,8 +34,8 @@ class UploadExcel extends Component {
           id="file"
           ref="fileUploader"
           accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
-          onChange={e => this.handleUpload(e)}
-          onClick={event => {
+          onChange={(e) => this.handleUpload(e)}
+          onClick={(event) => {
             event.target.value = null;
           }}
           style={{ display: "none" }}
@@ -47,6 +47,7 @@ class UploadExcel extends Component {
           className="fa fa-upload iconStyle"
           style={{ cursor: "pointer" }}
           onClick={this.handleClick}
+          title="Upload"
         />
       </React.Fragment>
     );

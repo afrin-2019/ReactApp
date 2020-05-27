@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import { Form, Row, Col, Button, Card } from "react-bootstrap";
 import { Dialog } from "primereact/dialog";
 import axios from "axios";
-import $ from "jquery";
 import UploadExcel from "./UploadExcel";
 let nextNodeType;
 class ServerDetailNew extends Component {
@@ -20,12 +19,10 @@ class ServerDetailNew extends Component {
     newNodeName: [],
     userEntry: this.props.userEntry,
     saveDialog: false,
-    nodeInfo: this.props.nodeInfo
+    nodeInfo: this.props.nodeInfo,
+    vendor: "Nokia",
   };
   componentDidMount() {
-    // $(document).ready(function() {
-    //   $('[data-toggle="tooltip"]').tooltip();
-    // });
     let server = this.props.serverDetail;
     console.log("mount", this.props.serverDetail);
     this.setState({ userName: server.Username });
@@ -37,11 +34,12 @@ class ServerDetailNew extends Component {
     this.setState({ nodeNameArray: arr }, () =>
       console.log("nodenames", this.state.nodeNameArray)
     );
+    this.showVendor();
   }
 
   showNodeNames = () => {
     let arr = [];
-    this.state.nodeInfo.map(node => {
+    this.state.nodeInfo.map((node) => {
       if (
         this.props.serverId === node.Server_Id &&
         node.Node_Type === this.state.nodeType
@@ -74,15 +72,30 @@ class ServerDetailNew extends Component {
       this.setState({ nodeNameArray: arr }, () =>
         console.log("nodenames", this.state.nodeNameArray)
       );
+      this.showVendor();
     }
     // }
   }
+
+  showVendor = () => {
+    console.log("vendor", this.state.vendor);
+    let vendor;
+    this.state.nodeInfo.map((node) => {
+      if (
+        this.props.serverId === node.Server_Id &&
+        node.Node_Type === this.state.nodeType
+      ) {
+        vendor = node.Vendor;
+      }
+    });
+    this.setState({ vendor: vendor });
+  };
 
   onHide = () => {
     this.setState({ visible: false });
   };
 
-  onNodeTypeChange = nodetype => {
+  onNodeTypeChange = (nodetype) => {
     if (this.state.newNodeName.length !== 0) {
       this.setState({ saveDialog: true });
       nextNodeType = nodetype;
@@ -91,11 +104,14 @@ class ServerDetailNew extends Component {
     }
   };
 
-  handleNodeChange = nodetype => {
+  onVendorChange = (vendorName) => {
+    this.setState({ vendor: vendorName });
+  };
+  handleNodeChange = (nodetype) => {
     this.setState({ nodeType: nodetype });
 
     let arr = [];
-    this.state.nodeInfo.map(node => {
+    this.state.nodeInfo.map((node) => {
       // console.log("node", node, "id", node.Server_Id);
       if (
         this.props.serverId === node.Server_Id &&
@@ -115,7 +131,7 @@ class ServerDetailNew extends Component {
 
   confirmNodeName = () => {
     let alreadyExist = false;
-    this.state.nodeInfo.map(node => {
+    this.state.nodeInfo.map((node) => {
       console.log(node);
       if (!alreadyExist) {
         if (node.Node_Name === this.state.nodeValue) {
@@ -125,7 +141,7 @@ class ServerDetailNew extends Component {
         }
       }
     });
-    this.state.nodeNameArray.map(node1 => {
+    this.state.nodeNameArray.map((node1) => {
       if (!alreadyExist) {
         if (node1 === this.state.nodeValue) {
           alreadyExist = true;
@@ -150,12 +166,7 @@ class ServerDetailNew extends Component {
     }
   };
 
-  handleSubmit1 = e => {
-    e.preventDefault();
-    console.log("node array", this.state.nodeNameArray);
-  };
-
-  handleSubmit = e => {
+  handleSubmit = (e) => {
     e.preventDefault();
     if (this.state.saveDialog) {
       this.setState({ saveDialog: false });
@@ -175,16 +186,17 @@ class ServerDetailNew extends Component {
         .post("http://localhost:5001/insert/connectivity/node-details", {
           Server_Id: this.props.serverId,
           Node_Name: this.state.newNodeName,
-          Node_Type: this.state.nodeType
+          Node_Type: this.state.nodeType,
+          Vendor: this.state.vendor,
         })
-        .then(res => {
+        .then((res) => {
           console.log(res);
           this.setState({ isSave: true });
           this.setState({ newNodeName: [] });
           this.props.deleteNode();
           axios
             .get("http://localhost:5001/get/connectivity/node-details")
-            .then(res => {
+            .then((res) => {
               this.setState({ nodeInfo: res.data });
               //alert("Saved");
               if (!nextNodeType) {
@@ -215,14 +227,15 @@ class ServerDetailNew extends Component {
         Server_Id: this.props.serverId,
         Username: this.state.userName,
         Password: this.state.password,
-        IPAddress: this.state.ipAddress
+        IPAddress: this.state.ipAddress,
+        //Vendor: this.state.vendor,
       };
       axios
         .post(
           "http://localhost:5001/insert/connectivity/server-details",
           serverRequest
         )
-        .then(res => {
+        .then((res) => {
           console.log(res);
           this.setState({ isSave: true });
           this.setState({ userEntry: "old" });
@@ -232,15 +245,16 @@ class ServerDetailNew extends Component {
               .post("http://localhost:5001/insert/connectivity/node-details", {
                 Server_Id: this.props.serverId,
                 Node_Name: this.state.newNodeName,
-                Node_Type: this.state.nodeType
+                Node_Type: this.state.nodeType,
+                Vendor: this.state.vendor,
               })
-              .then(resp => {
+              .then((resp) => {
                 console.log(resp);
                 this.setState({ newNodeName: [] });
                 this.props.deleteNode();
                 axios
                   .get("http://localhost:5001/get/connectivity/node-details")
-                  .then(res => {
+                  .then((res) => {
                     this.setState({ nodeInfo: res.data });
                   });
               });
@@ -288,7 +302,7 @@ class ServerDetailNew extends Component {
               display: "flex",
               justifyContent: "center",
               marginBottom: 10,
-              fontWeight: "bold"
+              fontWeight: "bold",
             }}
           >
             Server Name : {this.props.serverName}
@@ -304,7 +318,7 @@ class ServerDetailNew extends Component {
               style={{
                 marginBottom: 10,
                 color: "green",
-                fontWeight: "bold"
+                fontWeight: "bold",
               }}
             >
               Data Saved!
@@ -321,11 +335,25 @@ class ServerDetailNew extends Component {
                   placeholder="Enter Username"
                   required
                   type="text"
-                  onChange={evt =>
+                  onChange={(evt) =>
                     this.setState({ userName: evt.target.value })
                   }
                   value={this.state.userName}
                 />
+              </Col>
+              <Form.Label column sm={2}>
+                Vendor
+              </Form.Label>
+              <Col sm={2}>
+                <Form.Control
+                  as="select"
+                  value={this.state.vendor}
+                  onChange={(evt) => this.onVendorChange(evt.target.value)}
+                >
+                  <option value="Nokia">Nokia</option>
+                  <option value="Ericson">Ericson</option>
+                  <option value="Huwaei">Huwaei</option>
+                </Form.Control>
               </Col>
             </Form.Group>
 
@@ -338,7 +366,7 @@ class ServerDetailNew extends Component {
                   placeholder="Enter Password"
                   required
                   type="password"
-                  onChange={evt =>
+                  onChange={(evt) =>
                     this.setState({ password: evt.target.value })
                   }
                   value={this.state.password}
@@ -354,7 +382,7 @@ class ServerDetailNew extends Component {
                 <Form.Control
                   placeholder="Enter IP Address"
                   required
-                  onChange={evt =>
+                  onChange={(evt) =>
                     this.setState({ ipAddress: evt.target.value })
                   }
                   value={this.state.ipAddress}
@@ -370,7 +398,7 @@ class ServerDetailNew extends Component {
                 <Form.Control
                   as="select"
                   value={this.state.nodeType}
-                  onChange={evt => this.onNodeTypeChange(evt.target.value)}
+                  onChange={(evt) => this.onNodeTypeChange(evt.target.value)}
                 >
                   <option value="MSC">MSC</option>
                   <option value="BSC">BSC</option>
@@ -387,7 +415,7 @@ class ServerDetailNew extends Component {
                     width: "14rem",
                     minHeight: "10rem",
                     maxHeight: "10rem",
-                    overflow: "auto"
+                    overflow: "auto",
                   }}
                 >
                   <Card.Header>
@@ -395,14 +423,13 @@ class ServerDetailNew extends Component {
                       style={{
                         flexDirection: "row",
                         display: "flex",
-                        justifyContent: "center"
+                        justifyContent: "center",
                       }}
                     >
                       <i
                         className="fa fa-plus iconStyle"
                         style={{ cursor: "pointer", marginRight: 20 }}
-                        //data-toggle="tooltip"
-                        //title="Hooray!"
+                        title="Add Node Names"
                         onClick={this.addNodeNames}
                       />
                       <UploadExcel />
@@ -451,7 +478,7 @@ class ServerDetailNew extends Component {
           <input
             type="text"
             value={this.state.nodeValue}
-            onChange={evt => this.setState({ nodeValue: evt.target.value })}
+            onChange={(evt) => this.setState({ nodeValue: evt.target.value })}
           />
         </Dialog>
         <Dialog
