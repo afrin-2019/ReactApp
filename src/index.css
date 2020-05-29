@@ -181,3 +181,59 @@ code {
     font-size: 18px;
   }
 }
+
+#canvas {
+  display: inline-block;
+  width: 70%;
+  height: 100%;
+  background-color: transparent;
+  position: absolute;
+  background-size: 20px 20px, 20px 20px;
+  background-position: -1px -1px, -1px -1px;
+  background-image: linear-gradient(rgba(17, 16, 16, 0.3) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(19, 18, 18, 0.3) 1px, transparent 1px);
+
+  behavior: url(/pie/PIE.htc);
+}
+
+#topcanvas {
+  height: 50px;
+  width: 100%;
+  background-color: white;
+  border: 2px solid #d3d3d3;
+}
+
+#svg {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+}
+
+.item {
+  position: absolute;
+  z-index: 10;
+}
+.itembox {
+  position: absolute;
+  z-index: 10;
+  width: 100px;
+  height: 100px;
+  background-color: gray;
+  display: block;
+  /* margin: 2px; */
+  /* padding: 0px;  */
+}
+
+.itembox:hover {
+  cursor: grabbing;
+}
+
+.itembox1 {
+  width: 5px;
+  height: 5px;
+  background-color: gray;
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0px;
+  padding: 0px;
+}
