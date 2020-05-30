@@ -63,6 +63,7 @@ MongoClient.connect(url, function (err, db) {
   app.put("/insert/flows/steps", (req, res) => {
     var flowName = req.body.data.flowName;
     var step = req.body.data.step;
+    console.log(step);
     dbo
       .collection("FlowListCollection")
       .updateOne({ name: flowName }, { $push: { steps: step } }, function (
@@ -72,6 +73,27 @@ MongoClient.connect(url, function (err, db) {
         if (err) throw err;
       });
     res.send("steps inserted");
+  });
+
+  app.put("/update/flows/steps/axis", (req, res) => {
+    console.log(req.body);
+    var flowName = req.body.data.flowName;
+    var step = req.body.data.step;
+    var oldaxis = req.body.data.oldAxis;
+    var newaxis = req.body.data.newAxis;
+    var value = { name: step, axis: oldaxis };
+    var newValue = { name: step, axis: newaxis };
+
+    dbo
+      .collection("FlowListCollection")
+      .updateMany(
+        { name: flowName, steps: { $elemMatch: { name: step } } },
+        { $set: { "steps.$.axis": newaxis } },
+        function (err, res) {
+          if (err) throw err;
+        }
+      );
+    res.send("updated");
   });
 
   //insert steps into the respective flows

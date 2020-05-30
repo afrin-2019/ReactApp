@@ -1,11 +1,12 @@
 import React, { Component } from "react";
-
+import axios from "axios";
 class AddNode extends Component {
   constructor(props) {
     super(props);
     this.state = {
       x: this.props.x,
       y: this.props.y,
+      oldAxis: [this.props.x, this.props.y],
     };
     this.reff = React.createRef();
   }
@@ -15,6 +16,7 @@ class AddNode extends Component {
     this.pos3 = 0;
     this.pos4 = 0;
   }
+
   dragMouseDown = (e) => {
     e.preventDefault();
     this.pos3 = e.clientX;
@@ -35,6 +37,18 @@ class AddNode extends Component {
     });
   };
   closeDragElement = () => {
+    let request = {
+      flowName: this.props.flowName,
+      step: this.props.stepName,
+      oldAxis: this.state.oldAxis,
+      newAxis: [this.state.x, this.state.y],
+    };
+    axios
+      .put("http://localhost:5001/update/flows/steps/axis", { data: request })
+      .then((response) => {
+        console.log(response);
+        this.props.refresh();
+      });
     document.onmouseup = null;
     document.onmousemove = null;
   };
@@ -47,7 +61,7 @@ class AddNode extends Component {
         onMouseDown={this.dragMouseDown}
         ref={this.reff}
       >
-        Step {this.props.no}
+        {this.props.stepName}
       </div>
     );
   }

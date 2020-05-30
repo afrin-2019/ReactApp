@@ -182,6 +182,34 @@ class Flow extends Component {
     this.setState({ DupName: e.target.value });
   };
 
+  addStep = (stepno) => {
+    console.log("addstep", this.state.flowList);
+    console.log("stepno - Step", stepno);
+    console.log("flow", this.state.selectedFlow);
+
+    this.state.flowList.map((flow, index) => {
+      console.log("inside map", flow);
+      if (flow.name === this.state.selectedFlow) {
+        let stepNo = flow.steps.length + 1;
+        let stepName = "Step" + stepNo;
+        let obj = {};
+        obj["name"] = stepName;
+        obj["axis"] = [20, 60];
+
+        let request = {
+          flowName: flow.name,
+          step: obj,
+        };
+        axios
+          .put("http://localhost:5001/insert/flows/steps", { data: request })
+          .then((response) => {
+            console.log("res after step insert", response);
+            this.refreshFlowList();
+          });
+      }
+    });
+  };
+
   render() {
     console.log("this.state.flowList", this.state.flowList);
     const displayFlow = this.state.flowList.map((flow, index) => {
@@ -251,7 +279,12 @@ class Flow extends Component {
             {displayFlow}
           </div>
           {this.state.flowClicked ? (
-            <Canvas flowName={this.state.selectedFlow} />
+            <Canvas
+              flowName={this.state.selectedFlow}
+              addStep={this.addStep}
+              flowList={this.state.flowList}
+              refreshFlowList={this.refreshFlowList}
+            />
           ) : null}
           {this.state.addDialog ? (
             <AddDialog onHide={this.onHide} onAddFlow={this.addFlowList} />
