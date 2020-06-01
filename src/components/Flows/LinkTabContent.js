@@ -14,9 +14,10 @@ class LinkTabContent extends Component {
       if (flow.name === this.props.flowSelected) {
         flow.steps.map((step) => {
           i++;
+          console.log("sepname", step.name);
           option.push(
-            <option key={i} value={step}>
-              {step}
+            <option key={i} value={step.name}>
+              {step.name}
             </option>
           );
         });
@@ -57,10 +58,10 @@ class LinkTabContent extends Component {
       <div
         id={this.props.id}
         style={{
-          border: "2px solid #d3d3d3",
+          border: "1px solid #d3d3d3",
           borderRadius: 10,
-          padding: 10,
-          marginLeft: 80,
+          padding: 6,
+          marginLeft: 2,
           marginTop: 10,
           backgroundColor: "#f1f1f1",
           position: "relative",
@@ -71,8 +72,8 @@ class LinkTabContent extends Component {
             position: "absolute",
             top: 0,
             right: 0,
-            margin: 5,
-            fontSize: 12,
+            margin: 2,
+            fontSize: 10,
           }}
           className="btn"
           onClick={this.onDelete}
@@ -81,7 +82,9 @@ class LinkTabContent extends Component {
           {" "}
           <i className="fa fa-trash" />
         </button>
-        <div style={{ display: "flex", justifyContent: "center" }}>
+        <div
+        //style={{ display: "flex", justifyContent: "center" }}
+        >
           Condition : &nbsp;
           <input
             type="text"
@@ -98,10 +101,7 @@ class LinkTabContent extends Component {
             {this.diplayStepDropdown()}
           </select>{" "}
           &nbsp;&nbsp;
-          <button
-            className="btn btn-sm btn-outline-secondary"
-            onClick={this.onconfirmCondition}
-          >
+          <button style={{ margin: 2 }} onClick={this.onconfirmCondition}>
             Done
           </button>
         </div>

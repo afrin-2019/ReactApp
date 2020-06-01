@@ -84,10 +84,7 @@ class ActionTabContent extends Component {
             value={this.state.command}
             onChange={this.handleCommand}
           />
-          <button
-            className="btn btn-sm btn-outline-secondary m-2"
-            onClick={this.onconfirmCommand}
-          >
+          <button style={{ margin: 2 }} onClick={this.onconfirmCommand}>
             Done
           </button>
         </div>
@@ -104,16 +101,10 @@ class ActionTabContent extends Component {
             style={{ display: "none" }}
           />
           <label htmlFor="file">{this.state.file}</label>
-          <button
-            className="btn btn-sm btn-outline-secondary m-2"
-            onClick={this.handleClick}
-          >
+          <button style={{ margin: 2 }} onClick={this.handleClick}>
             Browse
           </button>
-          <button
-            className="btn btn-sm btn-outline-secondary m-2"
-            onClick={this.onConfirmParse}
-          >
+          <button style={{ margin: 2 }} onClick={this.onConfirmParse}>
             Done
           </button>
         </div>
@@ -124,10 +115,10 @@ class ActionTabContent extends Component {
       <div
         id={this.props.id}
         style={{
-          border: "2px solid #d3d3d3",
+          border: "1px solid #d3d3d3",
           borderRadius: 10,
-          padding: 10,
-          marginLeft: 80,
+          padding: 6,
+          marginLeft: 2,
           marginTop: 10,
           backgroundColor: "#f1f1f1",
           position: "relative",
@@ -138,8 +129,8 @@ class ActionTabContent extends Component {
             position: "absolute",
             top: 0,
             right: 0,
-            margin: 5,
-            fontSize: 12,
+            margin: 2,
+            fontSize: 10,
           }}
           className="btn"
           onClick={this.onDelete}
@@ -148,7 +139,9 @@ class ActionTabContent extends Component {
           {" "}
           <i className="fa fa-trash" />
         </button>
-        <div style={{ display: "flex", justifyContent: "center" }}>
+        <div
+        //style={{ display: "flex", justifyContent: "center" }}
+        >
           Select an action:&nbsp;
           <select
             name="action"
@@ -163,7 +156,9 @@ class ActionTabContent extends Component {
           </select>
         </div>
 
-        <div style={{ display: "flex", justifyContent: "center" }}>
+        <div
+        //style={{ display: "flex", justifyContent: "center" }}
+        >
           {" "}
           {commandContent}
         </div>

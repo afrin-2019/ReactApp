@@ -38,11 +38,12 @@ code {
   height: 100%;
   width: 200px;
   position: fixed;
-  z-index: 1;
+  z-index: 99;
   background-color: #a9a9a9;
   overflow-x: hidden;
   padding-top: 12px;
   overflow-y: auto;
+  margin: 2px;
 }
 
 .panelbar_flow div:hover {
@@ -91,6 +92,9 @@ code {
 .active-flow {
   background-color: #dcdcdc;
   color: white;
+  margin-right: 2px;
+  margin-left: 2px;
+  border-radius: 5%;
 }
 .active-step {
   background-color: #ddd;
@@ -187,6 +191,8 @@ code {
   width: 70%;
   height: 100%;
   background-color: transparent;
+  border: 2px solid #d3d3d3;
+  margin: 2px 2px 0px 0px;
   position: absolute;
   background-size: 20px 20px, 20px 20px;
   background-position: -1px -1px, -1px -1px;
@@ -200,7 +206,7 @@ code {
   height: 50px;
   width: 100%;
   background-color: white;
-  border: 2px solid #d3d3d3;
+  border-bottom: 2px solid #d3d3d3;
 }
 
 #svg {
@@ -217,9 +223,10 @@ code {
   position: absolute;
   z-index: 10;
   width: 100px;
-  height: 100px;
+  height: 60px;
   background-color: gray;
   display: block;
+
   /* margin: 2px; */
   /* padding: 0px;  */
 }
@@ -229,6 +236,7 @@ code {
 }
 
 .itembox1 {
+  position: absolute;
   width: 5px;
   height: 5px;
   background-color: gray;
@@ -236,4 +244,38 @@ code {
   vertical-align: middle;
   margin: 0px;
   padding: 0px;
+}
+
+.sidebar_right {
+  height: 100%;
+  width: 320px;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  right: 0;
+  background-color: #f2f2f2;
+  overflow-x: hidden;
+  transition: 0.5s;
+  padding-top: 60px;
+}
+
+.sidebar_right .closebtn {
+  position: absolute;
+  top: 0;
+  right: 25px;
+  /* font-size: 36px; */
+  /* margin-left: 50px; */
+}
+
+.smallbtn {
+  height: 40px;
+  width: 40px;
+}
+
+#canvaswrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  border: 2px solid #d3d3d3;
+  margin: 2px 2px 0px 0px;
 }

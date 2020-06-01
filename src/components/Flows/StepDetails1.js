@@ -172,68 +172,67 @@ class StepDetails1 extends Component {
     console.log("content", this.state.content);
     return (
       <React.Fragment>
-        <div style={{ marginLeft: 400 }}>
-          <div
-            style={{
-              margin: 20,
-              padding: 20,
-              border: "2px solid #D3D3D3",
-            }}
-          >
-            <div className="tab">
-              <button
-                className="tablinks"
-                onClick={(event) => this.openCity(event, "Action")}
-                id="defaultOpen"
-              >
-                Action
-              </button>
-              <button
-                className="tablinks"
-                onClick={(event) => this.openCity(event, "Link")}
-              >
-                Link
-              </button>
-            </div>
+        <div
+          style={{
+            margin: 5,
+            padding: 5,
+            border: "2px solid #D3D3D3",
+            fontSize: 12,
+          }}
+        >
+          <div className="tab">
+            <button
+              className="tablinks"
+              onClick={(event) => this.openCity(event, "Action")}
+              id="defaultOpen"
+            >
+              Action
+            </button>
+            <button
+              className="tablinks"
+              onClick={(event) => this.openCity(event, "Link")}
+            >
+              Link
+            </button>
+          </div>
 
-            <div id="Action" className="tabcontent">
-              <div
-                style={{
-                  position: "-webkit-sticky",
-                  position: "sticky",
-                  top: 0,
-                }}
+          <div id="Action" className="tabcontent">
+            <div
+              style={{
+                position: "-webkit-sticky",
+                position: "sticky",
+                top: 0,
+              }}
+            >
+              <button
+                // id={this.state.btnId}
+                onClick={this.addContent}
+                className="btn btn-sm btn-outline-secondary m-2"
+                title="Add action"
               >
-                <button
-                  // id={this.state.btnId}
-                  onClick={this.addContent}
-                  className="btn btn-sm btn-outline-secondary m-2"
-                  title="Add action"
-                >
-                  <i className="fa fa-plus" style={{ margin: 5 }}></i>
-                </button>
-              </div>
-              {this.state.content}
+                <i className="fa fa-plus" style={{ margin: 1 }}></i>
+              </button>
             </div>
+            {this.state.content}
+          </div>
 
-            <div id="Link" className="tabcontent">
-              <div
-                style={{
-                  position: "-webkit-sticky",
-                  position: "sticky",
-                  top: 0,
-                }}
+          <div id="Link" className="tabcontent">
+            <div
+              style={{
+                position: "-webkit-sticky",
+                position: "sticky",
+                top: 0,
+              }}
+            >
+              <button
+                className="btn btn-sm btn-outline-secondary m-2 "
+                onClick={this.onLinkContent}
+                title="Add Link"
               >
-                <button
-                  className="btn btn-sm btn-outline-secondary m-2"
-                  onClick={this.onLinkContent}
-                  title="Add Link"
-                >
-                  <i className="fa fa-plus" style={{ margin: 5 }}></i>
-                </button>
-              </div>
-              {this.state.link_content}
+                <i className="fa fa-plus" style={{ margin: 1 }}></i>
+              </button>
             </div>
+            {this.state.link_content}
           </div>
         </div>
       </React.Fragment>

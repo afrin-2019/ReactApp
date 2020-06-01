@@ -81,18 +81,18 @@ MongoClient.connect(url, function (err, db) {
     var step = req.body.data.step;
     var oldaxis = req.body.data.oldAxis;
     var newaxis = req.body.data.newAxis;
+    var newaxis1 = req.body.data.newAxis1;
     var value = { name: step, axis: oldaxis };
     var newValue = { name: step, axis: newaxis };
 
-    dbo
-      .collection("FlowListCollection")
-      .updateMany(
-        { name: flowName, steps: { $elemMatch: { name: step } } },
-        { $set: { "steps.$.axis": newaxis } },
-        function (err, res) {
-          if (err) throw err;
-        }
-      );
+    dbo.collection("FlowListCollection").updateMany(
+      { name: flowName, steps: { $elemMatch: { name: step } } },
+      { $set: { "steps.$.axis": newaxis, "steps.$.axis1": newaxis1 } },
+
+      function (err, res) {
+        if (err) throw err;
+      }
+    );
     res.send("updated");
   });
 

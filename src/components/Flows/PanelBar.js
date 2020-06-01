@@ -10,6 +10,7 @@ import StepDetails from "./StepDetails1";
 import SideNavBar from "../SideNavBar";
 import LogOut from "../LogOut";
 import Canvas from "./Canvas";
+
 class Flow extends Component {
   state = {
     addDialog: false,
@@ -22,6 +23,7 @@ class Flow extends Component {
     showStepDetails: false,
     DupName: "",
     step: "",
+
     options: [
       {
         label: "Delete",
@@ -195,6 +197,7 @@ class Flow extends Component {
         let obj = {};
         obj["name"] = stepName;
         obj["axis"] = [20, 60];
+        obj["axis1"] = [120, 70];
 
         let request = {
           flowName: flow.name,
@@ -227,6 +230,7 @@ class Flow extends Component {
               backgroundColor: "Transparent",
               border: "none",
               outline: "none",
+              padding: 5,
             }}
             onClick={() => this.onButtonClick(flow.name)}
           >
@@ -258,60 +262,62 @@ class Flow extends Component {
     );
     return (
       <React.Fragment>
-        <SideNavBar />
-        <div style={{ marginLeft: 200 }}>
-          <Menu
-            model={this.state.options}
-            popup={true}
-            ref={(el) => (this.menu = el)}
-            id="popup_menu"
-            style={{ margin: 5 }}
-          />
+        <div id="main">
+          <SideNavBar />
+          <div style={{ marginLeft: 200 }}>
+            <Menu
+              model={this.state.options}
+              popup={true}
+              ref={(el) => (this.menu = el)}
+              id="popup_menu"
+              style={{ margin: 5 }}
+            />
 
-          <div className="panelbar_flow">
-            <button
-              className="btn btn-sm btn-outline-secondary "
-              onClick={this.onClick}
-              title="Add Flow"
+            <div className="panelbar_flow">
+              <button
+                className="btn btn-sm btn-outline-secondary m-2"
+                onClick={this.onClick}
+                title="Add Flow"
+              >
+                <i className="fa fa-plus" style={{ margin: 5 }}></i>Add Flow
+              </button>
+              {displayFlow}
+            </div>
+            {this.state.flowClicked ? (
+              <Canvas
+                flowName={this.state.selectedFlow}
+                addStep={this.addStep}
+                flowList={this.state.flowList}
+                refreshFlowList={this.refreshFlowList}
+              />
+            ) : null}
+            {this.state.addDialog ? (
+              <AddDialog onHide={this.onHide} onAddFlow={this.addFlowList} />
+            ) : null}
+
+            {this.state.showStepDetails ? (
+              <StepDetails
+                selectedStep={this.state.step}
+                handleFlowList={this.state.flowList}
+                flowSelected={this.state.selectedFlow}
+              />
+            ) : null}
+            <Dialog
+              visible={this.state.showDupDialog}
+              style={{ width: "30vw" }}
+              closable={false}
+              footer={footer}
+              onHide={this.onHideDup}
             >
-              <i className="fa fa-plus" style={{ margin: 5 }}></i>
-            </button>
-            {displayFlow}
+              Name of the duplicate flow :
+              <input
+                type="text"
+                value={this.state.DupName}
+                onChange={this.onChange}
+                style={{ marginRight: 10 }}
+              />
+            </Dialog>
           </div>
-          {this.state.flowClicked ? (
-            <Canvas
-              flowName={this.state.selectedFlow}
-              addStep={this.addStep}
-              flowList={this.state.flowList}
-              refreshFlowList={this.refreshFlowList}
-            />
-          ) : null}
-          {this.state.addDialog ? (
-            <AddDialog onHide={this.onHide} onAddFlow={this.addFlowList} />
-          ) : null}
-
-          {this.state.showStepDetails ? (
-            <StepDetails
-              selectedStep={this.state.step}
-              handleFlowList={this.state.flowList}
-              flowSelected={this.state.selectedFlow}
-            />
-          ) : null}
-          <Dialog
-            visible={this.state.showDupDialog}
-            style={{ width: "30vw" }}
-            closable={false}
-            footer={footer}
-            onHide={this.onHideDup}
-          >
-            Name of the duplicate flow :
-            <input
-              type="text"
-              value={this.state.DupName}
-              onChange={this.onChange}
-              style={{ marginRight: 10 }}
-            />
-          </Dialog>
         </div>
       </React.Fragment>
     );
