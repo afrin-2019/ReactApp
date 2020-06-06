@@ -9,17 +9,33 @@ class StepDetails1 extends Component {
     btnId: 1,
     link_content: [],
     content: [],
+    flowContent: [],
+    disabled: true,
+    disableLink: true,
   };
 
   componentDidMount() {
     document.getElementById("defaultOpen").click();
+    console.log("step detail mount");
+    this.refresh();
+    this.setContent();
+  }
+
+  refresh = () => {
+    Axios.get("http://localhost:5001/get/flows/flowContent").then((res) => {
+      console.log("flow content", res.data);
+      this.setState({ flowContent: res.data });
+    });
+  };
+
+  setContent = () => {
     this.setState(
       {
         content: [
           ...this.state.content,
           <ActionTabContent
             key={this.state.btnId}
-            //enable={this.enableButton}
+            enableAdd={() => this.enableButton()}
             handleDelete={this.deleteAction}
             id={this.state.btnId}
             flowList={this.props.handleFlowList}
@@ -32,11 +48,12 @@ class StepDetails1 extends Component {
       //     document.getElementById(1).disabled = true;
       //   }
     );
-
+    let j = -1;
     this.setState({
       link_content: [
         ...this.state.link_content,
         <LinkTabContent
+          ind={j}
           key={1}
           id={1}
           flowList={this.props.handleFlowList}
@@ -44,10 +61,12 @@ class StepDetails1 extends Component {
           linkContent={this.onLinkContent}
           handleDelete={this.deleteLink}
           stepNo={this.props.selectedStep}
+          enableAddLink={() => this.enableLinkButton()}
+          attachFlow={(condition, value) => this.attachFlow(condition, value)}
         />,
       ],
     });
-  }
+  };
 
   openCity = (evt, name) => {
     // Declare all variables
@@ -71,6 +90,7 @@ class StepDetails1 extends Component {
   };
 
   addContent = () => {
+    this.setState({ disabled: true });
     this.setState({ btnId: this.state.btnId + 1 }, () =>
       this.setState({
         content: [
@@ -83,6 +103,7 @@ class StepDetails1 extends Component {
             flowList={this.props.handleFlowList}
             flowSelected={this.props.flowSelected}
             stepNo={this.props.selectedStep}
+            enableAdd={() => this.enableButton()}
           />,
         ],
       })
@@ -98,11 +119,15 @@ class StepDetails1 extends Component {
   //   };
 
   onLinkContent = () => {
+    this.setState({ disableLink: true });
+    this.props.disableAttach();
     i++;
+    let j = -1;
     this.setState({
       link_content: [
         ...this.state.link_content,
         <LinkTabContent
+          ind={j}
           key={i}
           id={i}
           flowList={this.props.handleFlowList}
@@ -110,12 +135,15 @@ class StepDetails1 extends Component {
           linkContent={this.onLinkContent}
           handleDelete={this.deleteLink}
           stepNo={this.props.selectedStep}
+          enableAddLink={() => this.enableLinkButton()}
+          attachFlow={(condition, value) => this.attachFlow(condition, value)}
         />,
       ],
     });
   };
 
   deleteAction = (id, action, value) => {
+    //console.log("delete", this.state.content);
     let contentArray = Object.assign([], this.state.content);
     contentArray.map((content, index) => {
       if (content.props.id === id) {
@@ -133,7 +161,11 @@ class StepDetails1 extends Component {
       };
       Axios.delete("http://localhost:5001/delete/flow/action", {
         data: request,
-      }).then((res) => console.log("res", res));
+      }).then((res) => {
+        console.log("res", res);
+        this.refresh();
+        //this.setContent();
+      });
     } else if (action === "4") {
       request = {
         flowname: this.props.flowSelected,
@@ -143,7 +175,11 @@ class StepDetails1 extends Component {
       };
       Axios.delete("http://localhost:5001/delete/flow/action", {
         data: request,
-      }).then((res) => console.log("res", res));
+      }).then((res) => {
+        console.log("res", res);
+        this.refresh();
+        //this.setContent();
+      });
     }
   };
 
@@ -166,10 +202,32 @@ class StepDetails1 extends Component {
     };
     Axios.delete("http://localhost:5001/delete/flow/link", {
       data: request,
-    }).then((res) => console.log("res", res));
+    }).then((res) => {
+      console.log("res", res);
+      this.refresh();
+      //this.setContent();
+    });
+  };
+
+  enableButton = () => {
+    //console.log("enabled");
+    this.setState({ disabled: false });
+  };
+
+  enableLinkButton = () => {
+    //console.log("enabled");
+    this.setState({ disableLink: false });
+  };
+
+  attachFlow = (condition, value) => {
+    //console.log("in step attach", value);
+    this.props.attachFlow(condition, value);
   };
   render() {
-    console.log("content", this.state.content);
+    // console.log("content", this.state.content);
+    // console.log("flow content", this.state.flowContent);
+    // console.log("prop in step detail", this.props);
+    let action, val, file;
     return (
       <React.Fragment>
         <div
@@ -202,6 +260,7 @@ class StepDetails1 extends Component {
                 position: "-webkit-sticky",
                 position: "sticky",
                 top: 0,
+                //zIndex: 100,
               }}
             >
               <button
@@ -209,10 +268,58 @@ class StepDetails1 extends Component {
                 onClick={this.addContent}
                 className="btn btn-sm btn-outline-secondary m-2"
                 title="Add action"
+                disabled={this.state.disabled}
               >
                 <i className="fa fa-plus" style={{ margin: 1 }}></i>
               </button>
             </div>
+            {this.state.flowContent.map((content) => {
+              if (content.Flow === this.props.flowSelected) {
+                if (content.Step === this.props.selectedStep) {
+                  if (content.Action.length !== 0) {
+                    return content.Action.map((action1, index) => {
+                      if (action1.Type === "Run a Command") {
+                        action = "3";
+                        val = action1.Command;
+                        return (
+                          <ActionTabContent
+                            key={index}
+                            selectedAction={action}
+                            val={val}
+                            id={index}
+                            enableAdd={() => this.enableButton()}
+                            handleDelete={this.deleteAction}
+                            flowList={this.props.handleFlowList}
+                            flowSelected={this.props.flowSelected}
+                            stepNo={this.props.selectedStep}
+                          />
+                        );
+                      } else if (action1.Type === "Parse the Output") {
+                        action = "4";
+                        file = action1.File;
+                        return (
+                          <ActionTabContent
+                            key={index}
+                            selectedAction={action}
+                            file={file}
+                            id={index}
+                            handleDelete={this.deleteAction}
+                            flowList={this.props.handleFlowList}
+                            flowSelected={this.props.flowSelected}
+                            stepNo={this.props.selectedStep}
+                            enableAdd={() => this.enableButton()}
+                          />
+                        );
+                      } else if (action1.Type === "Find NodeDetails") {
+                        action = "1";
+                      } else if (action1.Type === "Connect") {
+                        action = "2";
+                      }
+                    });
+                  }
+                }
+              }
+            })}
             {this.state.content}
           </div>
 
@@ -228,10 +335,43 @@ class StepDetails1 extends Component {
                 className="btn btn-sm btn-outline-secondary m-2 "
                 onClick={this.onLinkContent}
                 title="Add Link"
+                disabled={this.state.disableLink}
               >
                 <i className="fa fa-plus" style={{ margin: 1 }}></i>
               </button>
             </div>
+            {this.state.flowContent.map((content) => {
+              console.log("content", content + ", ", this.props.flowSelected);
+              if (content.Flow === this.props.flowSelected) {
+                if (content.Step === this.props.selectedStep) {
+                  if (content.Link.length !== 0) {
+                    return content.Link.map((link, index) => {
+                      //console.log("link", link, "index", index);
+
+                      return (
+                        <LinkTabContent
+                          ind={index}
+                          key={index}
+                          id={index}
+                          flowList={this.props.handleFlowList}
+                          flowSelected={this.props.flowSelected}
+                          linkContent={this.onLinkContent}
+                          handleDelete={this.deleteLink}
+                          stepNo={this.props.selectedStep}
+                          condition={link.Condition}
+                          path={link.NextStep.path}
+                          selectValue={link.NextStep.name}
+                          enableAddLink={() => this.enableLinkButton()}
+                          attachFlow={(condition, value) =>
+                            this.attachFlow(condition, value)
+                          }
+                        />
+                      );
+                    });
+                  }
+                }
+              }
+            })}
             {this.state.link_content}
           </div>
         </div>

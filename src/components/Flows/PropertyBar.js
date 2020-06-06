@@ -8,6 +8,7 @@ class PropertyBar extends Component {
   closeBar = () => {
     this.props.handleClose();
   };
+
   render() {
     console.log("in prp", this.props.step);
     console.log("props", this.props);
@@ -24,6 +25,10 @@ class PropertyBar extends Component {
           selectedStep={this.props.step}
           handleFlowList={this.props.flowList}
           flowSelected={this.props.selectedFlow}
+          attachFlow={(condition, value) =>
+            this.props.attachFlow(condition, value)
+          }
+          disableAttach={() => this.props.disableAttach()}
         />
       </div>
     );

@@ -59,6 +59,17 @@ MongoClient.connect(url, function (err, db) {
       });
   });
 
+  //get the flows content from db
+  app.get("/get/flows/flowContent", (req, res) => {
+    dbo
+      .collection("FlowContent")
+      .find({})
+      .toArray(function (err, flowcontent) {
+        if (err) throw err;
+        res.send(flowcontent);
+      });
+  });
+
   //insert steps into the respective flows
   app.put("/insert/flows/steps", (req, res) => {
     var flowName = req.body.data.flowName;
@@ -569,6 +580,7 @@ MongoClient.connect(url, function (err, db) {
           reqObj = {
             Flow: flowname,
             Step: stepno,
+            Link: [],
             Action: action,
           };
           dbo.collection("FlowContent").insertOne(reqObj, function (err, res) {
@@ -602,7 +614,7 @@ MongoClient.connect(url, function (err, db) {
         let link = [];
         linkObj = {
           Condition: req.query.condition,
-          NextStep: req.query.nextStep,
+          NextStep: { path: req.query.path, name: req.query.nextStep },
         };
         if (result.length == 0) {
           link.push(linkObj);
@@ -610,20 +622,62 @@ MongoClient.connect(url, function (err, db) {
             Flow: flowname,
             Step: stepno,
             Link: link,
+            Action: [],
           };
           dbo.collection("FlowContent").insertOne(reqObj, function (err, res) {
             if (err) throw err;
           });
         } else {
-          dbo
-            .collection("FlowContent")
-            .updateOne(
-              { Flow: flowname, Step: stepno },
-              { $push: { Link: linkObj } },
-              function (err, res) {
-                if (err) throw err;
+          // console.log("condition", result[0].Link);
+          // result[0].Link.map(link => {
+          //   if(link.Condition === req.query.oldcondition){
+          //     dbo
+          //     .collection("FlowContent")
+          //     .updateOne(
+          //       { Flow: flowname, Step: stepno },
+          //       { $set: { "Link.$.Condition": linkObj } },
+          //       function (err, res) {
+          //         if (err) throw err;
+          //       }
+          //     );
+          //   }
+          // })
+          let i = req.query.index;
+          console.log("index", i);
+          if (i >= 0) {
+            result[0].Link.map((link, index) => {
+              console.log("index inside", index);
+              if (index == i) {
+                console.log("index to change", link);
+                dbo.collection("FlowContent").updateOne(
+                  { Flow: flowname, Step: stepno },
+                  {
+                    $set: {
+                      ["Link." + index]: linkObj,
+                      // "Link.$.Condition": req.query.condition,
+                      // "Link.$.NextStep": {
+                      //   path: req.query.path,
+                      //   name: req.query.nextStep,
+                      // },
+                    },
+                  },
+                  function (err, res) {
+                    if (err) throw err;
+                  }
+                );
               }
-            );
+            });
+          } else {
+            dbo
+              .collection("FlowContent")
+              .updateOne(
+                { Flow: flowname, Step: stepno },
+                { $push: { Link: linkObj } },
+                function (err, res) {
+                  if (err) throw err;
+                }
+              );
+          }
         }
         res.send("inserted successfully");
       });

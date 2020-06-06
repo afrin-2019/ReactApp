@@ -10,7 +10,7 @@ class Canvas extends Component {
       count: 0,
       x: 20,
       y: 60,
-      openSideBar: false,
+      //openSideBar: false,
       selectedStep: "",
       d1: "M 287 122 L 417 122",
     };
@@ -26,12 +26,16 @@ class Canvas extends Component {
   refreshFlow = () => {
     this.props.refreshFlowList();
   };
-  onNodeClick = (step) => {
-    this.setState({ selectedStep: step }, () =>
-      this.setState({ openSideBar: true })
-    );
-    console.log("step nodeclick", step);
-    //document.getElementById("main1").style.marginRight = "250px";
+  // onNodeClick = (step) => {
+  //   this.setState({ selectedStep: step }, () =>
+  //     this.setState({ openSideBar: true })
+  //   );
+  // console.log("step nodeclick", step);
+  //document.getElementById("main1").style.marginRight = "250px";
+  // };
+
+  handleStepClick = (step) => {
+    this.setState({ selectedStep: step });
   };
 
   onCloseBar = () => {
@@ -45,28 +49,13 @@ class Canvas extends Component {
     );
   };
   render() {
-    // var divList = [],
-    //   no = 1;
-    // {
-    //   Array.from({ length: this.state.count }, (_, index) =>
-    //     divList.push(
-    //       <AddNode
-    //         key={index}
-    //         index={index}
-    //         x={this.state.x}
-    //         y={this.state.y}
-    //         no={no++}
-    //       />
-    //     )
-    //   );
-
     let divList;
     divList = (
       <div>
         {this.props.flowList.map((flow) => {
           if (flow.name === this.props.flowName) {
             return flow.steps.map((step, index) => {
-              console.log("step", step);
+              //console.log("step", step);
               return (
                 <AddNode
                   key={index}
@@ -80,6 +69,8 @@ class Canvas extends Component {
                   refresh={this.refreshFlow}
                   handleNodeClick={this.onNodeClick}
                   drawLine={this.drawLine}
+                  stepClicked={this.handleStepClick}
+                  flowList={this.props.flowList}
                 />
               );
             });
@@ -117,18 +108,21 @@ class Canvas extends Component {
               ></path>
             </svg>
           </div> */}
+          <div id="canvas1">
+            <svg id="svg"></svg>
+          </div>
           <div>{divList}</div>
         </div>
 
         {/* </div> */}
-        {this.state.openSideBar ? (
+        {/* {this.state.openSideBar ? (
           <PropertyBar
             handleClose={this.onCloseBar}
             step={this.state.selectedStep}
             flowList={this.props.flowList}
             selectedFlow={this.props.flowName}
           />
-        ) : null}
+        ) : null} */}
       </div>
     );
   }

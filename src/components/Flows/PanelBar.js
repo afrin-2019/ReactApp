@@ -242,7 +242,9 @@ class Flow extends Component {
               aria-controls="popup_menu"
               aria-haspopup={true}
               style={{
-                marginLeft: 50,
+                //marginLeft: 50,
+                //position: "absolute",
+                marginRight: 10,
                 backgroundColor: "Transparent",
                 border: "none",
               }}
@@ -295,13 +297,13 @@ class Flow extends Component {
               <AddDialog onHide={this.onHide} onAddFlow={this.addFlowList} />
             ) : null}
 
-            {this.state.showStepDetails ? (
+            {/* {this.state.showStepDetails ? (
               <StepDetails
                 selectedStep={this.state.step}
                 handleFlowList={this.state.flowList}
                 flowSelected={this.state.selectedFlow}
               />
-            ) : null}
+            ) : null} */}
             <Dialog
               visible={this.state.showDupDialog}
               style={{ width: "30vw" }}

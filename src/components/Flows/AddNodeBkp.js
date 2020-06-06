@@ -1,8 +1,7 @@
 import React, { Component } from "react";
 import axios from "axios";
 import PropertyBar from "./PropertyBar";
-let i = 0,
-  j = 0;
+let i = 0;
 class AddNode extends Component {
   constructor(props) {
     super(props);
@@ -25,6 +24,19 @@ class AddNode extends Component {
     this.pos2 = 0;
     this.pos3 = 0;
     this.pos4 = 0;
+    let x = this.state.x.toString();
+    let y = this.state.y.toString();
+    x = x.slice(0, -2);
+    y = y.slice(0, -2);
+    y = parseInt(y) + 30;
+    y = y.toString();
+    this.setState({ newDivAxis: [x, y] });
+    x = parseInt(x) + 100;
+    x = x.toString();
+    y = parseInt(y) + 10;
+    y = y.toString();
+    this.setState({ sideDivAxis: [x, y] });
+    console.log("x and y", x + "," + y);
     axios.get("http://localhost:5001/get/flows/flowContent").then((res) => {
       this.setState({ flowContent: res.data });
       res.data.map((content) => {
@@ -58,10 +70,13 @@ class AddNode extends Component {
       y: this.reff.current.offsetTop - this.pos2 + "px",
       x: this.reff.current.offsetLeft - this.pos1 + "px",
     });
-    this.setState({
-      y1: this.reff.current.offsetTop - this.pos2 + 10 + "px",
-      x1: this.reff.current.offsetLeft - this.pos1 + 99 + "px",
-    });
+    this.setState(
+      {
+        y1: this.reff.current.offsetTop - this.pos2 + 10 + "px",
+        x1: this.reff.current.offsetLeft - this.pos1 + 99 + "px",
+      },
+      () => console.log(this.state.x1, this.state.y1)
+    );
   };
   closeDragElement = () => {
     let request = {
@@ -97,102 +112,113 @@ class AddNode extends Component {
   };
 
   attachFlow = (condition, value) => {
+    console.log("in attach flow");
+    //this.setState({ attachFlow: true });
     i++;
-    j++;
-    if (value === "Flow") {
-      this.setState({
-        addDiv: [
-          ...this.state.addDiv,
-          <React.Fragment key={i}>
-            <div className="itembox" id={"itembox" + j}>
-              {condition}
-            </div>
-          </React.Fragment>,
-        ],
-      });
-    } else {
-      this.setState({
-        addDiv: [
-          ...this.state.addDiv,
-          <React.Fragment key={i}>
-            <div className="wrapItem">
-              <div className="stepitembox" id={"stepitembox" + j}>
-                {condition}
-              </div>
-              <div
-                className="sideitembox"
-                id={"sideitembox" + j}
-                // onMouseDown={this.startLine}
-              >
-                {" "}
-              </div>
-            </div>
-          </React.Fragment>,
-        ],
-      });
-    }
-  };
 
-  startLine = (event) => {
-    console.log("start line");
-    let svg = document.getElementById("svg");
-    //e.preventDefault();
-    console.log(event.target.offsetTop, event.target.offsetLeft);
-    let startpositionleft =
-      document.getElementById(event.target.parentElement.id).offsetLeft +
-      event.target.offsetLeft;
-    let startpositiontop =
-      document.getElementById(event.target.parentElement.id).offsetTop +
-      event.target.offsetTop -
-      20;
-    let newsvgline = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "path"
-    );
-    i = i + 1;
-    newsvgline.id = "path" + i;
-    let pathid = "path" + i;
-    let d =
-      "M" +
-      startpositionleft +
-      " " +
-      startpositiontop +
-      " L" +
-      (startpositionleft + 20) +
-      " " +
-      startpositiontop;
-    console.log(d);
-    newsvgline.setAttribute("d", d);
-    svg.appendChild(newsvgline);
-    let targetid = document.getElementById(event.target.id);
-    //  canvas.onmousemove=function() {drawline()};
-    //  canvas.onmouseup=function() {endline()};
+    this.setState({
+      addDiv: [
+        ...this.state.addDiv,
+        <div key={i}>
+          <div
+            className="itembox2"
+            style={{
+              left: this.state.newDivAxis[0] + "px",
+              top: this.state.newDivAxis[1] + "px",
+            }}
+          >
+            {condition}
+          </div>
+          {value === "Step" ? (
+            <div
+              className="itembox1"
+              style={{
+                left: this.state.sideDivAxis[0] + "px",
+                top: this.state.sideDivAxis[1] + "px",
+              }}
+            ></div>
+          ) : null}
+        </div>,
+      ],
+    });
+    let y = parseInt(this.state.newDivAxis[1]) + 32;
+    y = y.toString();
+    this.setState({
+      newDivAxis: [this.state.newDivAxis[0], y],
+    });
+    y = parseInt(this.state.sideDivAxis[1]) + 32;
+    y = y.toString();
+    this.setState({ sideDivAxis: [this.state.sideDivAxis[0], y] });
   };
 
   disableAttach = () => {
     this.setState({ attachFlow: false });
   };
 
+  // startLine = () => {
+  //   console.log(
+  //     "draw line",
+  //     this.reff.current.offsetLeft + "," + this.reff.current.offsetTop
+  //   );
+  //   this.setState(
+  //     {
+  //       d1:
+  //         "M " +
+  //         this.reff.current.offsetLeft +
+  //         " " +
+  //         this.reff.current.offsetTop +
+  //         " L " +
+  //         this.reff.current.offsetLeft +
+  //         1 +
+  //         " " +
+  //         this.reff.current.offsetTop,
+  //     },
+  //     () => console.log("d1", this.state.d1)
+  //   );
+  //   // document.onmousemove = this.closeDragElement1;
+  // };
+
+  // closeDragElement1 = () => {
+  //   console.log("draw line");
+  //   this.setState(
+  //     {
+  //       d2:
+  //         "L " +
+  //         this.reff.current.offsetLeft +
+  //         " " +
+  //         this.reff.current.offsetTop,
+  //     },
+  //     () => console.log("d2", this.state.d2)
+  //   );
+  // };
+
   render() {
-    let i = this.props.index;
+    console.log("x - ", this.state.x, " y - ", this.state.y);
     return (
       <React.Fragment>
         <div
           key={this.props.index}
           onClick={this.onStepClicked}
-          className="item"
-          id={"item" + i}
-          style={{ left: this.state.x, top: this.state.y }}
-          onMouseDown={this.dragMouseDown}
-          ref={this.reff}
+          className="outer_div"
+          //style={{ left: this.state.x, top: this.state.y }}
+          //onMouseDown={this.dragMouseDown}
+          //ref={this.reff}
         >
           <div
-            className="dragbox"
-            id={"dragbox" + i}
+            className="itembox"
+            style={{ left: this.state.x, top: this.state.y }}
+            onMouseDown={this.dragMouseDown}
+            ref={this.reff}
             onDoubleClick={this.doubleClick}
           >
             {this.props.stepName}
           </div>
+          <div
+            className="itembox1"
+            style={{ left: this.state.x1, top: this.state.y1 }}
+            //onMouseDown={this.startLine}
+            //onMouseMove={this.props.drawLine}
+          ></div>
           {this.state.addDiv}
         </div>
         {this.state.openSideBar ? (

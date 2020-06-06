@@ -37,7 +37,7 @@ code {
 .panelbar_flow {
   height: 100%;
   width: 200px;
-  position: fixed;
+  position: absolute;
   z-index: 99;
   background-color: #a9a9a9;
   overflow-x: hidden;
@@ -194,6 +194,7 @@ code {
   border: 2px solid #d3d3d3;
   margin: 2px 2px 0px 0px;
   position: absolute;
+  /* position: relative; */
   background-size: 20px 20px, 20px 20px;
   background-position: -1px -1px, -1px -1px;
   background-image: linear-gradient(rgba(17, 16, 16, 0.3) 1px, transparent 1px),
@@ -207,6 +208,7 @@ code {
   width: 100%;
   background-color: white;
   border-bottom: 2px solid #d3d3d3;
+  position: absolute;
 }
 
 #svg {
@@ -220,37 +222,76 @@ code {
   z-index: 10;
 }
 .itembox {
-  position: absolute;
-  z-index: 10;
+  /* position: absolute; */
+  /* z-index: 10; */
   width: 100px;
-  height: 60px;
+  height: 30px;
   background-color: gray;
   display: block;
-
-  /* margin: 2px; */
+  margin-top: 2px;
+  padding: 0px;
+}
+.stepitembox {
+  /* position: absolute;
+  z-index: 10; */
+  width: 100px;
+  height: 30px;
+  background-color: gray;
+  display: inline-block;
+  margin-top: 2px;
   /* padding: 0px;  */
+}
+
+.item {
+  position: absolute;
+  z-index: 10;
 }
 
 .itembox:hover {
   cursor: grabbing;
 }
 
-.itembox1 {
-  position: absolute;
+.sideitembox {
+  /* position: absolute; */
   width: 5px;
   height: 5px;
   background-color: gray;
   display: inline-block;
+  /* vertical-align: middle; */
+  margin: 0px;
+  padding: 0px;
+}
+
+.wrapItem {
+  display: block;
+}
+
+.outer_div {
+  position: absolute;
+  width: 120px;
+  min-height: 100px;
+  overflow: hidden;
+  border: 1px solid red;
+}
+
+.dragbox {
+  width: 100px;
+  height: 50px;
+  background-color: gray;
+  display: block;
   vertical-align: middle;
   margin: 0px;
   padding: 0px;
+}
+.dragbox:hover {
+  cursor: grabbing;
 }
 
 .sidebar_right {
   height: 100%;
   width: 320px;
   position: fixed;
-  z-index: 1;
+  z-index: 200;
   top: 0;
   right: 0;
   background-color: #f2f2f2;
@@ -278,4 +319,81 @@ code {
   position: relative;
   border: 2px solid #d3d3d3;
   margin: 2px 2px 0px 0px;
+}
+
+.editor {
+  top: 50px;
+  background-color: black;
+  z-index: 10;
+  height: 500px;
+  width: 1000px;
+  display: inline-block;
+  position: absolute;
+}
+
+.header {
+  width: 500px;
+  height: 30px;
+  background-color: dimgrey;
+  position: absolute;
+}
+.realeditw {
+  top: 30px;
+  width: 500px;
+  height: 440px;
+  background-color: pink;
+  position: absolute;
+  overflow: auto;
+}
+.realedit {
+  width: 200%;
+  height: 200%;
+  background-color: black;
+  position: absolute;
+  color: white;
+}
+svg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  z-index: 10;
+}
+.footer {
+  width: 500px;
+  height: 30px;
+  background-color: dimgrey;
+  top: 470px;
+  position: absolute;
+}
+#realeditw::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+#realeditw::-webkit-scrollbar-thumb {
+  background-color: lightgray;
+}
+#realeditw::-webkit-scrollbar-track {
+  background-color: black;
+}
+#result {
+  background-color: lightgray;
+  width: 500px;
+  height: 500px;
+  left: 500px;
+  position: absolute;
+  display: inline-block;
+}
+rect {
+  width: 300px;
+  height: 100px;
+  fill: none;
+  stroke-width: 3;
+  stroke: white;
+  z-index: 20;
+  position: absolute;
+}
+.rectangle {
+  border: 1px solid white;
+  position: absolute;
 }

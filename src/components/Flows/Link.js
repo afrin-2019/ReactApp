@@ -10,7 +10,7 @@ class LinkTabContent extends Component {
       step: this.props.selectValue || "",
       radio: this.props.path || "",
       disabled: false,
-      index: this.props.ind,
+      index: this.props.index || -1,
       isError: false,
     };
   }
@@ -38,46 +38,32 @@ class LinkTabContent extends Component {
 
   handleValue = (e) => {
     this.setState({ disabled: false });
-    //this.props.disableAdd();
     this.setState({ value: e.target.value });
   };
 
   handleStepChange = (value) => {
     this.setState({ step: value });
   };
-
-  onSave = () => {
-    Axios.get("http://localhost:5001/flow/content/link", {
-      params: {
-        flowName: this.props.flowSelected,
-        stepNo: this.props.stepNo,
-        path: this.state.radio,
-        condition: this.state.value,
-        nextStep: this.state.step,
-        index: this.state.index,
-      },
-    }).then((res) => {
-      console.log("res", res);
-      this.setState({ disabled: true });
-      this.setState({ isError: false });
-      this.props.attachFlow(this.state.value, this.state.radio);
-      this.props.enableAddLink();
-    });
-  };
   onconfirmCondition = () => {
-    // console.log("stepno", this.props.stepNo);
-    // console.log("index", this.state.index);
-
-    if (!this.state.value || !this.state.radio) {
+    console.log("stepno", this.props.stepNo);
+    console.log("index", this.state.index);
+    if (!this.state.value || !this.state.radio || !this.state.step) {
       this.setState({ isError: true });
-    } else if (this.state.radio === "Flow") {
-      if (!this.state.step) {
-        this.setState({ isError: true });
-      } else {
-        this.onSave();
-      }
     } else {
-      this.onSave();
+      Axios.get("http://localhost:5001/flow/content/link", {
+        params: {
+          flowName: this.props.flowSelected,
+          stepNo: this.props.stepNo,
+          path: this.state.radio,
+          condition: this.state.value,
+          nextStep: this.state.step,
+          index: this.state.index,
+        },
+      }).then((res) => {
+        console.log("res", res);
+        this.setState({ disabled: true });
+        this.setState({ isError: false });
+      });
     }
   };
 
@@ -91,8 +77,8 @@ class LinkTabContent extends Component {
     );
   };
   render() {
-    //console.log("props in link", this.props);
-    // console.log("index", this.state.index);
+    console.log("props in link", this.props);
+    console.log("rdio", this.state.radio);
     return (
       <div
         id={this.props.id}
@@ -134,37 +120,44 @@ class LinkTabContent extends Component {
             onChange={(e) => this.handleValue(e)}
           />{" "}
           &nbsp;&nbsp;
-          <div style={{ display: "flex", flexDirection: "row" }}>
+          <div>
+            <input
+              type="radio"
+              name="radiobtn"
+              value="Flow"
+              checked={this.state.radio === "Flow"}
+              onChange={(e) => this.setRadio(e)}
+              //style={{ margin: 2 }}
+            />
+            Flow <br />
+            <input
+              type="radio"
+              name="radiobtn"
+              value="Step"
+              checked={this.state.radio === "Step"}
+              onChange={(e) => this.setRadio(e)}
+              //style={{ margin: 2 }}
+            />{" "}
+            Step <br />
+          </div>
+          {this.state.radio === "Flow" ? (
             <select
-              style={{ margin: 2 }}
-              name="floworstep"
-              value={this.state.radio}
-              onChange={(event) => this.setRadio(event)}
+              name="steplist"
+              value={this.state.step}
+              onChange={(event) => this.handleStepChange(event.target.value)}
             >
               <option>Select</option>
-              <option value="Flow">Flow</option>
-              <option value="Step">Step</option>
+              {this.diplayFlowDropdown()}
             </select>
-            {this.state.radio === "Flow" ? (
-              <select
-                style={{ margin: 2 }}
-                name="steplist"
-                value={this.state.step}
-                onChange={(event) => this.handleStepChange(event.target.value)}
-              >
-                <option>Select</option>
-                {this.diplayFlowDropdown()}
-              </select>
-            ) : null}
-            &nbsp;&nbsp;
-            <button
-              style={{ margin: 2 }}
-              onClick={this.onconfirmCondition}
-              disabled={this.state.disabled}
-            >
-              save
-            </button>
-          </div>
+          ) : null}
+          &nbsp;&nbsp;
+          <button
+            style={{ margin: 2 }}
+            onClick={this.onconfirmCondition}
+            disabled={this.state.disabled}
+          >
+            save
+          </button>
         </div>
       </div>
     );
