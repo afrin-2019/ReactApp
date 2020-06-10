@@ -208,7 +208,7 @@ code {
   width: 100%;
   background-color: white;
   border-bottom: 2px solid #d3d3d3;
-  position: absolute;
+  /* position: absolute; */
 }
 
 #svg {
@@ -247,9 +247,9 @@ code {
   z-index: 10;
 }
 
-.itembox:hover {
+/* .itembox:hover {
   cursor: grabbing;
-}
+} */
 
 .sideitembox {
   /* position: absolute; */
@@ -311,6 +311,17 @@ code {
 .smallbtn {
   height: 40px;
   width: 40px;
+}
+
+/* #svg {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+} */
+path {
+  stroke: blue;
+  stroke-width: 3;
+  fill: none;
 }
 
 #canvaswrapper {

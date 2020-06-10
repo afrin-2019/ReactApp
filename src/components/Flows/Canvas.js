@@ -48,6 +48,7 @@ class Canvas extends Component {
       this.reff.current.offsetLeft + "," + this.reff.current.offsetTop
     );
   };
+
   render() {
     let divList;
     divList = (
@@ -113,16 +114,6 @@ class Canvas extends Component {
           </div>
           <div>{divList}</div>
         </div>
-
-        {/* </div> */}
-        {/* {this.state.openSideBar ? (
-          <PropertyBar
-            handleClose={this.onCloseBar}
-            step={this.state.selectedStep}
-            flowList={this.props.flowList}
-            selectedFlow={this.props.flowName}
-          />
-        ) : null} */}
       </div>
     );
   }

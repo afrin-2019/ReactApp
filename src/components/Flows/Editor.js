@@ -35,7 +35,7 @@ class Editor extends Component {
   }
   marktext = (e) => {
     //window.document.getElementById("realedit").setAttribute("readonly", true);
-    this.canvas = document.getElementById("realedit");
+    this.canvas = document.getElementById("realeditw");
     this.mouse = {
       x: 0,
       y: 0,
@@ -44,7 +44,7 @@ class Editor extends Component {
     };
     this.canvas.style.cursor = "crosshair";
     document
-      .getElementById("realedit")
+      .getElementById("realeditw")
       .addEventListener("mousedown", this.showrectangle);
   };
 
@@ -116,7 +116,7 @@ class Editor extends Component {
           <button onClick={this.marktext}>Mark</button>
         </div>
         <div className="realeditw" id="realeditw">
-          <div className="realedit" id="realedit" contentEditable="true"></div>
+          <textarea className="realedit" id="realedit"></textarea>
         </div>
         <div className="footer"></div>
         <div id="result"></div>

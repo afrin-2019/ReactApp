@@ -3,6 +3,19 @@ import axios from "axios";
 import PropertyBar from "./PropertyBar";
 let i = 0,
   j = 0;
+let pathid,
+  targetid,
+  startpositionleft,
+  startpositiontop,
+  d,
+  canvas,
+  lined,
+  canvas1,
+  dragitem,
+  a,
+  sp,
+  b,
+  sp1;
 class AddNode extends Component {
   constructor(props) {
     super(props);
@@ -17,6 +30,7 @@ class AddNode extends Component {
       attachFlow: false,
       addDiv: [],
       flowContent: [],
+      lineStart: false,
     };
     this.reff = React.createRef();
   }
@@ -44,8 +58,13 @@ class AddNode extends Component {
     e.preventDefault();
     this.pos3 = e.clientX;
     this.pos4 = e.clientY;
-    document.onmouseup = this.closeDragElement;
+
     document.onmousemove = this.elementDrag;
+    dragitem = document.getElementById(e.target.parentElement.id);
+    console.log("drag item", dragitem);
+    // document.onmouseup = this.state.lineStart
+    //   ? this.endLine
+    //   : this.closeDragElement;
   };
 
   elementDrag = (e) => {
@@ -62,8 +81,65 @@ class AddNode extends Component {
       y1: this.reff.current.offsetTop - this.pos2 + 10 + "px",
       x1: this.reff.current.offsetLeft - this.pos1 + 99 + "px",
     });
+    a = dragitem.getElementsByTagName("p");
+
+    console.log("a", a);
+
+    for (let it = 0; it < a.length; it++) {
+      console.log(a[it].innerHTML);
+      let newId = a[it].innerHTML.split("-");
+      b = document.getElementById(newId[0]);
+      sp = b.getAttribute("d").split(" ");
+      console.log("sp", sp);
+      d =
+        sp[0] +
+        " " +
+        sp[1] +
+        " L" +
+        dragitem.offsetLeft +
+        " " +
+        (dragitem.offsetTop - 10);
+      console.log("new d", d);
+      b.setAttribute("d", d);
+    }
+    sp = dragitem.getElementsByTagName("span");
+    console.log("sp", sp);
+    for (let it = 0; it < sp.length; it++) {
+      console.log(sp[it].innerHTML);
+      let newId = sp[it].innerHTML.split("-");
+      b = document.getElementById(newId[0]);
+      console.log("b", b);
+      sp1 = b.getAttribute("d").split(" ");
+
+      //idofitembox1 = dragitem.id.substring(7, 9);
+      //console.log(idofitembox1);
+      console.log(
+        "parent id",
+        document.getElementById(e.target.parentElement.id)
+      );
+      console.log("targetid", targetid.offsetTop);
+      startpositionleft =
+        document.getElementById(e.target.parentElement.id).offsetLeft + 100;
+      startpositiontop =
+        document.getElementById(e.target.parentElement.id).offsetTop +
+        document.getElementById(newId[1]).offsetTop -
+        50;
+      //d= sp[0]+" "+sp[1]+" L"+(dragitem.offsetLeft+50)+" "+(dragitem.offsetTop);
+      d =
+        "M" +
+        startpositionleft +
+        " " +
+        startpositiontop +
+        " " +
+        sp1[2] +
+        " " +
+        sp1[3];
+
+      b.setAttribute("d", d);
+    }
   };
   closeDragElement = () => {
+    console.log("mouse up ", this.state.lineStart);
     let request = {
       flowName: this.props.flowName,
       step: this.props.stepName,
@@ -103,11 +179,16 @@ class AddNode extends Component {
       this.setState({
         addDiv: [
           ...this.state.addDiv,
-          <React.Fragment key={i}>
-            <div className="itembox" id={"itembox" + j}>
-              {condition}
-            </div>
-          </React.Fragment>,
+          // <React.Fragment key={i}>
+          <div
+            className="itembox"
+            id={"itembox" + j}
+            key={i}
+            onMouseUp={this.endLine}
+          >
+            {condition}
+          </div>,
+          // </React.Fragment>,
         ],
       });
     } else {
@@ -115,14 +196,18 @@ class AddNode extends Component {
         addDiv: [
           ...this.state.addDiv,
           <React.Fragment key={i}>
-            <div className="wrapItem">
-              <div className="stepitembox" id={"stepitembox" + j}>
+            <div className="wrapItem" id={"wrapitem" + i}>
+              <div
+                className="stepitembox"
+                id={"stepitembox" + j}
+                onMouseUp={this.endLine}
+              >
                 {condition}
               </div>
               <div
                 className="sideitembox"
                 id={"sideitembox" + j}
-                // onMouseDown={this.startLine}
+                onMouseDown={this.startLine}
               >
                 {" "}
               </div>
@@ -133,26 +218,29 @@ class AddNode extends Component {
     }
   };
 
+  onflowClick = () => {
+    console.log("flow click - line start", this.state.lineStart);
+    this.endLine();
+  };
+
+  disableAttach = () => {
+    this.setState({ attachFlow: false });
+  };
+
   startLine = (event) => {
-    console.log("start line");
+    this.setState({ lineStart: true });
     let svg = document.getElementById("svg");
-    //e.preventDefault();
-    console.log(event.target.offsetTop, event.target.offsetLeft);
-    let startpositionleft =
-      document.getElementById(event.target.parentElement.id).offsetLeft +
-      event.target.offsetLeft;
-    let startpositiontop =
-      document.getElementById(event.target.parentElement.id).offsetTop +
-      event.target.offsetTop -
-      20;
+    startpositionleft = this.reff.current.offsetLeft + event.target.offsetLeft;
+    startpositiontop =
+      this.reff.current.offsetTop + event.target.offsetTop - 50;
     let newsvgline = document.createElementNS(
       "http://www.w3.org/2000/svg",
       "path"
     );
     i = i + 1;
     newsvgline.id = "path" + i;
-    let pathid = "path" + i;
-    let d =
+    pathid = "path" + i;
+    d =
       "M" +
       startpositionleft +
       " " +
@@ -161,16 +249,95 @@ class AddNode extends Component {
       (startpositionleft + 20) +
       " " +
       startpositiontop;
-    console.log(d);
     newsvgline.setAttribute("d", d);
     svg.appendChild(newsvgline);
-    let targetid = document.getElementById(event.target.id);
-    //  canvas.onmousemove=function() {drawline()};
-    //  canvas.onmouseup=function() {endline()};
+    canvas = document.getElementById("canvas1");
+    console.log(canvas);
+    targetid = document.getElementById(event.target.id);
+    console.log("targetid", targetid);
+    canvas.onmousemove = this.drawLine;
+    canvas.onmouseup = this.endLine;
   };
 
-  disableAttach = () => {
-    this.setState({ attachFlow: false });
+  drawLine = (event) => {
+    lined = document.getElementById(pathid);
+    event.preventDefault();
+    canvas1 = document.getElementById("canvas");
+
+    this.posx1 = event.clientX - canvas1.offsetLeft;
+    this.posy1 = event.clientY - canvas1.offsetTop - 50;
+
+    d =
+      "M" +
+      startpositionleft +
+      " " +
+      startpositiontop +
+      " L" +
+      this.posx1 +
+      " " +
+      this.posy1;
+    //console.log("d", d);
+    lined.setAttribute("d", d);
+    canvas.onmouseup = this.endLine;
+  };
+
+  endLine = (event) => {
+    event.preventDefault();
+    // this.lined = document.getElementById(pathid);
+    console.log(
+      "endline",
+      document.elementFromPoint(event.clientX, event.clientY).id
+    );
+
+    if (
+      document
+        .elementFromPoint(event.clientX, event.clientY)
+        .id.indexOf("itembox") != -1
+    ) {
+      this.endid = document.getElementById(
+        document.elementFromPoint(event.clientX, event.clientY).parentElement.id
+      );
+      console.log("endid", this.endid);
+      if (this.endid.id.indexOf("wrapitem") !== -1) {
+        console.log("true", this.endid.parentElement);
+        this.endid = this.endid.parentElement;
+      }
+
+      d =
+        "M" +
+        startpositionleft +
+        " " +
+        startpositiontop +
+        " L" +
+        this.endid.offsetLeft +
+        " " +
+        (this.endid.offsetTop - 20);
+      console.log("find id", targetid.id);
+      console.log("end d - ", d);
+      lined.setAttribute("d", d);
+      this.hiddenel = document.createElement("p");
+      this.hiddenel.hidden = "true";
+      this.hiddenel.innerHTML = lined.id + "-" + targetid.id;
+      this.endid.appendChild(this.hiddenel);
+      this.hiddenspan = document.createElement("span");
+      this.hiddenspan.hidden = "true";
+      this.hiddenspan.innerHTML = lined.id + "-" + targetid.id;
+      targetid.parentElement.appendChild(this.hiddenspan);
+    } else if (
+      document.getElementById(
+        document
+          .elementFromPoint(event.clientX, event.clientY)
+          .parentElement.id.indexOf("wrapitem") !== -1
+      )
+    ) {
+      console.log("in wrap item");
+    } else {
+      lined.remove();
+      this.setState({ lineStart: false });
+    }
+
+    canvas.onmouseup = null;
+    canvas.onmousemove = null;
   };
 
   render() {
@@ -183,18 +350,22 @@ class AddNode extends Component {
           className="item"
           id={"item" + i}
           style={{ left: this.state.x, top: this.state.y }}
-          onMouseDown={this.dragMouseDown}
+          //onMouseDown={this.dragMouseDown}
+          //onMouseUp={this.closeDragElement}
           ref={this.reff}
         >
           <div
             className="dragbox"
             id={"dragbox" + i}
             onDoubleClick={this.doubleClick}
+            onMouseDown={this.dragMouseDown}
+            onMouseUp={this.closeDragElement}
           >
             {this.props.stepName}
           </div>
           {this.state.addDiv}
         </div>
+
         {this.state.openSideBar ? (
           <PropertyBar
             handleClose={this.onCloseBar}

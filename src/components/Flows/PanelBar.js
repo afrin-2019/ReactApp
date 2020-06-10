@@ -215,14 +215,15 @@ class Flow extends Component {
 
   render() {
     console.log("this.state.flowList", this.state.flowList);
+    console.log("new changes");
     const displayFlow = this.state.flowList.map((flow, index) => {
       return (
         <div
           key={index}
-          style={{
-            display: "flex",
-            justifyContent: "center",
-          }}
+          // style={{
+          //   display: "flex",
+          //   justifyContent: "center",
+          // }}
           className={this.state.selectedFlow === flow.name ? "active-flow" : ""}
         >
           <button
@@ -236,22 +237,24 @@ class Flow extends Component {
           >
             {flow.name}
           </button>
-          <div>
-            <button
-              onClick={(event) => this.showMenu(event, flow.name)}
-              aria-controls="popup_menu"
-              aria-haspopup={true}
-              style={{
-                //marginLeft: 50,
-                //position: "absolute",
-                marginRight: 10,
-                backgroundColor: "Transparent",
-                border: "none",
-              }}
-            >
-              <i className="fa fa-lg fa-sort-desc"></i>
-            </button>
-          </div>
+          {/* <div> */}
+          <button
+            onClick={(event) => this.showMenu(event, flow.name)}
+            aria-controls="popup_menu"
+            aria-haspopup={true}
+            style={{
+              //marginLeft: 50,
+              //position: "absolute",
+
+              float: "right",
+              marginRight: 10,
+              backgroundColor: "Transparent",
+              border: "none",
+            }}
+          >
+            <i className="fa fa-lg fa-sort-desc"></i>
+          </button>
+          {/* </div> */}
         </div>
       );
     });
