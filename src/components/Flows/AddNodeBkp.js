@@ -1,7 +1,22 @@
 import React, { Component } from "react";
 import axios from "axios";
 import PropertyBar from "./PropertyBar";
-let i = 0;
+let i = 0,
+  j = 0;
+let pathid,
+  targetid,
+  startpositionleft,
+  startpositiontop,
+  d,
+  canvas,
+  lined,
+  canvas1,
+  dragitem,
+  a,
+  sp,
+  b,
+  sp1,
+  drawline;
 class AddNode extends Component {
   constructor(props) {
     super(props);
@@ -16,6 +31,7 @@ class AddNode extends Component {
       attachFlow: false,
       addDiv: [],
       flowContent: [],
+      lineStart: false,
     };
     this.reff = React.createRef();
   }
@@ -24,19 +40,7 @@ class AddNode extends Component {
     this.pos2 = 0;
     this.pos3 = 0;
     this.pos4 = 0;
-    let x = this.state.x.toString();
-    let y = this.state.y.toString();
-    x = x.slice(0, -2);
-    y = y.slice(0, -2);
-    y = parseInt(y) + 30;
-    y = y.toString();
-    this.setState({ newDivAxis: [x, y] });
-    x = parseInt(x) + 100;
-    x = x.toString();
-    y = parseInt(y) + 10;
-    y = y.toString();
-    this.setState({ sideDivAxis: [x, y] });
-    console.log("x and y", x + "," + y);
+    this.newPathId = 0;
     axios.get("http://localhost:5001/get/flows/flowContent").then((res) => {
       this.setState({ flowContent: res.data });
       res.data.map((content) => {
@@ -50,14 +54,28 @@ class AddNode extends Component {
       });
       console.log("flow content", res.data);
     });
+    axios.get("http://localhost:5001/get/flows/pathinfo").then((res) => {
+      if (res.data.length !== 0) {
+        this.newPathId = res.data[res.data.length - 1].pathname.split("-");
+        this.newPathId = this.newPathId[0].slice(-2);
+
+        this.newPathId = parseInt(this.newPathId) + 1;
+        console.log("newpathId", this.newPathId);
+      }
+    });
   }
 
   dragMouseDown = (e) => {
     e.preventDefault();
     this.pos3 = e.clientX;
     this.pos4 = e.clientY;
-    document.onmouseup = this.closeDragElement;
+
     document.onmousemove = this.elementDrag;
+    dragitem = document.getElementById(e.target.parentElement.id);
+    console.log("drag item", dragitem);
+    // document.onmouseup = this.state.lineStart
+    //   ? this.endLine
+    //   : this.closeDragElement;
   };
 
   elementDrag = (e) => {
@@ -70,15 +88,85 @@ class AddNode extends Component {
       y: this.reff.current.offsetTop - this.pos2 + "px",
       x: this.reff.current.offsetLeft - this.pos1 + "px",
     });
-    this.setState(
-      {
-        y1: this.reff.current.offsetTop - this.pos2 + 10 + "px",
-        x1: this.reff.current.offsetLeft - this.pos1 + 99 + "px",
-      },
-      () => console.log(this.state.x1, this.state.y1)
-    );
+    this.setState({
+      y1: this.reff.current.offsetTop - this.pos2 + 10 + "px",
+      x1: this.reff.current.offsetLeft - this.pos1 + 99 + "px",
+    });
+    a = dragitem.getElementsByTagName("p");
+
+    console.log("a", a);
+
+    for (let it = 0; it < a.length; it++) {
+      console.log(a[it].innerHTML);
+      let newId = a[it].innerHTML.split("-");
+      b = document.getElementById(newId[0]);
+      sp = b.getAttribute("d").split(" ");
+      console.log("sp", sp);
+      d =
+        sp[0] +
+        " " +
+        sp[1] +
+        " L" +
+        dragitem.offsetLeft +
+        " " +
+        (dragitem.offsetTop - 10);
+      console.log("new d", d);
+      b.setAttribute("d", d);
+      let req = {
+        flowName: this.props.flowName,
+        path: d,
+        pathname: a[it].innerHTML,
+      };
+      axios
+        .put("http://localhost:5001/update/flows/pathInfo", { data: req })
+        .then((res) => console.log(res));
+    }
+    sp = dragitem.getElementsByTagName("span");
+    console.log("sp", sp);
+    for (let it = 0; it < sp.length; it++) {
+      console.log(sp[it].innerHTML);
+      let newId = sp[it].innerHTML.split("-");
+      b = document.getElementById(newId[0]);
+      console.log("b", b);
+      sp1 = b.getAttribute("d").split(" ");
+
+      //idofitembox1 = dragitem.id.substring(7, 9);
+      //console.log(idofitembox1);
+      console.log(
+        "parent id",
+        document.getElementById(e.target.parentElement.id)
+      );
+      //console.log("targetid", targetid.offsetTop);
+      startpositionleft =
+        document.getElementById(e.target.parentElement.id).offsetLeft + 100;
+      startpositiontop =
+        document.getElementById(e.target.parentElement.id).offsetTop +
+        document.getElementById(newId[1]).offsetTop -
+        50;
+      //d= sp[0]+" "+sp[1]+" L"+(dragitem.offsetLeft+50)+" "+(dragitem.offsetTop);
+      d =
+        "M" +
+        startpositionleft +
+        " " +
+        startpositiontop +
+        " " +
+        sp1[2] +
+        " " +
+        sp1[3];
+
+      b.setAttribute("d", d);
+      let req = {
+        flowName: this.props.flowName,
+        path: d,
+        pathname: sp[it].innerHTML,
+      };
+      axios
+        .put("http://localhost:5001/update/flows/pathInfo", { data: req })
+        .then((res) => console.log(res));
+    }
   };
-  closeDragElement = () => {
+  closeDragElement = (e) => {
+    console.log("mouse up ", this.state.lineStart);
     let request = {
       flowName: this.props.flowName,
       step: this.props.stepName,
@@ -92,6 +180,10 @@ class AddNode extends Component {
         console.log(response);
         this.props.refresh();
       });
+    console.log("line start", drawline);
+    if (drawline === true) {
+      this.endLine(e);
+    }
     document.onmouseup = null;
     document.onmousemove = null;
   };
@@ -112,115 +204,228 @@ class AddNode extends Component {
   };
 
   attachFlow = (condition, value) => {
-    console.log("in attach flow");
-    //this.setState({ attachFlow: true });
     i++;
-
-    this.setState({
-      addDiv: [
-        ...this.state.addDiv,
-        <div key={i}>
+    j++;
+    let pathid, spanId;
+    if (value === "Flow") {
+      this.setState({
+        addDiv: [
+          ...this.state.addDiv,
+          // <React.Fragment key={i}>
           <div
-            className="itembox2"
-            style={{
-              left: this.state.newDivAxis[0] + "px",
-              top: this.state.newDivAxis[1] + "px",
-            }}
+            className="itembox"
+            id={"itembox" + j}
+            key={i}
+            //onMouseUp={this.endLine}
           >
             {condition}
-          </div>
-          {value === "Step" ? (
-            <div
-              className="itembox1"
-              style={{
-                left: this.state.sideDivAxis[0] + "px",
-                top: this.state.sideDivAxis[1] + "px",
-              }}
-            ></div>
-          ) : null}
-        </div>,
-      ],
-    });
-    let y = parseInt(this.state.newDivAxis[1]) + 32;
-    y = y.toString();
-    this.setState({
-      newDivAxis: [this.state.newDivAxis[0], y],
-    });
-    y = parseInt(this.state.sideDivAxis[1]) + 32;
-    y = y.toString();
-    this.setState({ sideDivAxis: [this.state.sideDivAxis[0], y] });
+          </div>,
+          // </React.Fragment>,
+        ],
+      });
+    } else {
+      this.setState({
+        addDiv: [
+          ...this.state.addDiv,
+          <React.Fragment key={i}>
+            <div className="wrapItem" id={"wrapitem" + i}>
+              <div
+                className="stepitembox"
+                id={"stepitembox" + j}
+                //onMouseUp={this.endLine}
+              >
+                {condition}
+              </div>
+
+              <div
+                className="sideitembox"
+                id={"sideitembox" + j}
+                onMouseDown={this.startLine}
+              ></div>
+              {this.props.pathInfo.map((path, index) => {
+                if (path.flowname === this.props.flowName) {
+                  pathid = path.pathname.split("-");
+                  spanId = "sideitembox" + j;
+
+                  if (pathid[1] === spanId) {
+                    return (
+                      <span key={index} hidden>
+                        {path.pathname}
+                      </span>
+                    );
+                  }
+                }
+              })}
+            </div>
+          </React.Fragment>,
+        ],
+      });
+    }
+  };
+
+  onflowClick = () => {
+    this.endLine();
   };
 
   disableAttach = () => {
     this.setState({ attachFlow: false });
   };
 
-  // startLine = () => {
-  //   console.log(
-  //     "draw line",
-  //     this.reff.current.offsetLeft + "," + this.reff.current.offsetTop
-  //   );
-  //   this.setState(
-  //     {
-  //       d1:
-  //         "M " +
-  //         this.reff.current.offsetLeft +
-  //         " " +
-  //         this.reff.current.offsetTop +
-  //         " L " +
-  //         this.reff.current.offsetLeft +
-  //         1 +
-  //         " " +
-  //         this.reff.current.offsetTop,
-  //     },
-  //     () => console.log("d1", this.state.d1)
-  //   );
-  //   // document.onmousemove = this.closeDragElement1;
-  // };
+  startLine = (event) => {
+    // let newPathId;
+    // axios.get("http://localhost:5001/get/flows/pathinfo").then(res =>{
+    //   newPathId = res.data[
+    //   res.data.length - 1
+    // ].pathname.split("-");
+    // newPathId = newPathId[0].slice(-2);
+    // console.log("newpathid", newPathId);
+    // newPathId=parseInt(newPathId)
+    console.log("pathid when line starts", this.newPathId);
+    this.setState({ lineStart: true });
+    drawline = true;
+    let svg = document.getElementById("svg");
+    startpositionleft = this.reff.current.offsetLeft + event.target.offsetLeft;
+    startpositiontop =
+      this.reff.current.offsetTop + event.target.offsetTop - 50;
+    let newsvgline = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "path"
+    );
+    i = i + 1;
+    newsvgline.id = "path" + this.newPathId;
+    pathid = "path" + this.newPathId;
+    d =
+      "M" +
+      startpositionleft +
+      " " +
+      startpositiontop +
+      " L" +
+      (startpositionleft + 20) +
+      " " +
+      startpositiontop;
+    newsvgline.setAttribute("d", d);
+    svg.appendChild(newsvgline);
+    canvas = document.getElementById("canvas1");
+    console.log(canvas);
+    targetid = document.getElementById(event.target.id);
 
-  // closeDragElement1 = () => {
-  //   console.log("draw line");
-  //   this.setState(
-  //     {
-  //       d2:
-  //         "L " +
-  //         this.reff.current.offsetLeft +
-  //         " " +
-  //         this.reff.current.offsetTop,
-  //     },
-  //     () => console.log("d2", this.state.d2)
-  //   );
-  // };
+    this.newPathId += 1;
+    canvas.onmousemove = this.drawLine;
+    canvas.onmouseup = this.endLine;
+    // })
+  };
+
+  drawLine = (event) => {
+    lined = document.getElementById(pathid);
+    event.preventDefault();
+    canvas1 = document.getElementById("canvas");
+
+    this.posx1 = event.clientX - canvas1.offsetLeft;
+    this.posy1 = event.clientY - canvas1.offsetTop - 50;
+
+    d =
+      "M" +
+      startpositionleft +
+      " " +
+      startpositiontop +
+      " L" +
+      this.posx1 +
+      " " +
+      this.posy1;
+    //console.log("d", d);
+    lined.setAttribute("d", d);
+    canvas.onmouseup = this.endLine;
+  };
+
+  endLine = (event) => {
+    event.preventDefault();
+
+    if (
+      document
+        .elementFromPoint(event.clientX, event.clientY)
+        .id.indexOf("dragbox") !== -1
+    ) {
+      this.endid = document.getElementById(
+        document.elementFromPoint(event.clientX, event.clientY).parentElement.id
+      );
+      console.log("endid", this.endid);
+
+      d =
+        "M" +
+        startpositionleft +
+        " " +
+        startpositiontop +
+        " L" +
+        this.endid.offsetLeft +
+        " " +
+        (this.endid.offsetTop - 20);
+      let pathname = lined.id + "-" + targetid.id;
+      console.log("end d - ", d);
+      lined.setAttribute("d", d);
+      this.hiddenel = document.createElement("p");
+      this.hiddenel.hidden = "true";
+      this.hiddenel.innerHTML = pathname;
+      this.endid.appendChild(this.hiddenel);
+      this.hiddenspan = document.createElement("span");
+      this.hiddenspan.hidden = "true";
+      this.hiddenspan.innerHTML = pathname;
+      targetid.parentElement.appendChild(this.hiddenspan);
+      let req = {
+        flowName: this.props.flowName,
+        path: d,
+        pathname: pathname,
+        endStep: this.props.stepName,
+      };
+      axios
+        .post("http://localhost:5001/insert/flows/pathInfo", { data: req })
+        .then((res) => console.log(res));
+    } else {
+      lined.remove();
+      //this.setState({ lineStart: false });
+      drawline = false;
+    }
+    drawline = false;
+    canvas.onmouseup = null;
+    canvas.onmousemove = null;
+  };
 
   render() {
-    console.log("x - ", this.state.x, " y - ", this.state.y);
+    let i = this.props.index;
     return (
       <React.Fragment>
         <div
           key={this.props.index}
           onClick={this.onStepClicked}
-          className="outer_div"
-          //style={{ left: this.state.x, top: this.state.y }}
+          className="item"
+          id={"item" + i}
+          style={{ left: this.state.x, top: this.state.y }}
           //onMouseDown={this.dragMouseDown}
-          //ref={this.reff}
+          //onMouseUp={this.closeDragElement}
+          ref={this.reff}
         >
           <div
-            className="itembox"
-            style={{ left: this.state.x, top: this.state.y }}
-            onMouseDown={this.dragMouseDown}
-            ref={this.reff}
+            className="dragbox"
+            id={"dragbox" + i}
             onDoubleClick={this.doubleClick}
+            onMouseDown={this.dragMouseDown}
+            onMouseUp={this.closeDragElement}
           >
             {this.props.stepName}
           </div>
-          <div
-            className="itembox1"
-            style={{ left: this.state.x1, top: this.state.y1 }}
-            //onMouseDown={this.startLine}
-            //onMouseMove={this.props.drawLine}
-          ></div>
           {this.state.addDiv}
+          {this.props.pathInfo.map((path, index) => {
+            if (path.flowname === this.props.flowName) {
+              if (path.endstep === this.props.stepName) {
+                return (
+                  <p key={index} hidden>
+                    {path.pathname}
+                  </p>
+                );
+              }
+            }
+          })}
         </div>
+
         {this.state.openSideBar ? (
           <PropertyBar
             handleClose={this.onCloseBar}

@@ -23,6 +23,7 @@ class Flow extends Component {
     showStepDetails: false,
     DupName: "",
     step: "",
+    pathInfo: [],
 
     options: [
       {
@@ -44,7 +45,19 @@ class Flow extends Component {
 
   componentDidMount() {
     this.refreshFlowList();
+    this.refreshPathInfo();
   }
+
+  refreshPathInfo = () => {
+    let req = {
+      flowName: this.state.selectedFlow,
+    };
+    console.log("in refresh path", req);
+    axios.get("http://localhost:5001/get/flows/pathInfo").then((res) => {
+      console.log("path info", res.data);
+      this.setState({ pathInfo: res.data });
+    });
+  };
 
   refreshFlowList = () => {
     axios.get("http://localhost:5001/get/flows/flowList").then((response) => {
@@ -100,8 +113,15 @@ class Flow extends Component {
   };
 
   onButtonClick = (flow) => {
-    this.setState({ selectedFlow: flow });
-    this.setState({ flowClicked: true });
+    console.log("button click");
+    axios.get("http://localhost:5001/get/flows/pathInfo").then((res) => {
+      console.log("path info", res.data);
+      this.setState({ pathInfo: res.data }, () =>
+        this.setState({ selectedFlow: flow })
+      );
+
+      this.setState({ flowClicked: true });
+    });
   };
 
   updateFlow = (flowList, selectedStep) => {
@@ -143,6 +163,8 @@ class Flow extends Component {
       .then((res) => {
         console.log("res", res);
         this.refreshFlowList();
+        this.setState({ selectedFlow: "" });
+        this.refreshPathInfo();
       });
   };
 
@@ -155,21 +177,31 @@ class Flow extends Component {
     if (isExist) {
       alert("already exist");
     } else {
-      let list_to_add = { name: this.state.DupName, steps: [] };
-      this.state.flowList.map((flow) => {
-        if (flow.name === this.state.selectedFlow) {
-          flow.steps.map((step) => {
-            list_to_add.steps.push(step);
-          });
-        }
-      });
+      // let list_to_add = { name: this.state.DupName, steps: [] };
+      // this.state.flowList.map((flow) => {
+      //   if (flow.name === this.state.selectedFlow) {
+      //     flow.steps.map((step) => {
+      //       list_to_add.steps.push(step);
+      //     });
+      //   }
+      // });
+      // axios
+      //   .post("http://localhost:5001/insert/flows/flowList", {
+      //     data: list_to_add,
+      //   })
+      //   .then((res) => {
+      //     console.log("res after insert", res);
+      //     this.refreshFlowList();
+      //   });
       axios
-        .post("http://localhost:5001/insert/flows/flowList", {
-          data: list_to_add,
+        .put("http://localhost:5001/flows/duplicate", {
+          new_flowName: this.state.DupName,
+          flow_to_duplicate: this.state.selectedFlow,
         })
         .then((res) => {
-          console.log("res after insert", res);
+          console.log(res);
           this.refreshFlowList();
+          this.refreshPathInfo();
         });
     }
     this.onHideDup();
@@ -214,16 +246,17 @@ class Flow extends Component {
   };
 
   render() {
-    console.log("this.state.flowList", this.state.flowList);
-    console.log("new changes");
+    //console.log("this.state.flowList", this.state.flowList);
+    //console.log("new changes");
     const displayFlow = this.state.flowList.map((flow, index) => {
       return (
         <div
           key={index}
-          // style={{
-          //   display: "flex",
-          //   justifyContent: "center",
-          // }}
+          style={{
+            marginLeft: 5,
+            //   display: "flex",
+            //   justifyContent: "center",
+          }}
           className={this.state.selectedFlow === flow.name ? "active-flow" : ""}
         >
           <button
@@ -288,12 +321,15 @@ class Flow extends Component {
               </button>
               {displayFlow}
             </div>
-            {this.state.flowClicked ? (
+            {this.state.selectedFlow ? (
               <Canvas
                 flowName={this.state.selectedFlow}
                 addStep={this.addStep}
                 flowList={this.state.flowList}
                 refreshFlowList={this.refreshFlowList}
+                pathInfo={this.state.pathInfo}
+                refreshPath={this.refreshPathInfo}
+                rerender={this.onButtonClick}
               />
             ) : null}
             {this.state.addDialog ? (

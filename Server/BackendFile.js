@@ -129,11 +129,142 @@ MongoClient.connect(url, function (err, db) {
 
     dbo
       .collection("FlowListCollection")
-      .deleteOne({ name: flowname }, function (err, res) {
+      .deleteMany({ name: flowname }, function (err, res) {
+        if (err) throw err;
+      });
+    dbo
+      .collection("FlowContent")
+      .deleteMany({ Flow: flowname }, function (err, res) {
+        if (err) throw err;
+      });
+    dbo
+      .collection("PathCollection")
+      .deleteMany({ flowname: flowname }, function (err, res) {
         if (err) throw err;
       });
 
     res.send("deleted");
+  });
+
+  app.delete("/delete/flows/path", (req, res) => {
+    var id = req.body.pathid;
+    console.log("id", id);
+    dbo
+      .collection("PathCollection")
+      .deleteOne({ flowname: req.body.flowName, pathid: id }, function (
+        err,
+        res
+      ) {
+        if (err) throw err;
+      });
+    res.send("path deleted");
+  });
+
+  app.put("/flows/duplicate", (req, res) => {
+    var flowName = req.body.flow_to_duplicate;
+    var newFlow = req.body.new_flowName;
+    dbo
+      .collection("FlowListCollection")
+      .find({ name: flowName })
+      .forEach(function (doc) {
+        var newDoc = doc;
+        console.log("doc", newDoc);
+        delete newDoc._id;
+        newDoc.name = newFlow;
+        dbo
+          .collection("FlowListCollection")
+          .insertOne(newDoc, function (err, res) {
+            if (err) throw err;
+          });
+      });
+    //....................................
+    dbo
+      .collection("FlowContent")
+      .find({ Flow: flowName })
+      .forEach(function (doc) {
+        var newDoc = doc;
+        console.log("doc", newDoc);
+        delete newDoc._id;
+        newDoc.Flow = newFlow;
+        dbo.collection("FlowContent").insertOne(newDoc, function (err, res) {
+          if (err) throw err;
+        });
+      });
+    //....................................
+    dbo
+      .collection("PathCollection")
+      .find({ flowname: flowName })
+      .forEach(function (doc) {
+        var newDoc = doc;
+        console.log("doc", newDoc);
+        delete newDoc._id;
+        newDoc.flowname = newFlow;
+        dbo.collection("PathCollection").insertOne(newDoc, function (err, res) {
+          if (err) throw err;
+        });
+      });
+
+    res.send("dup");
+  });
+
+  app.post("/insert/flows/pathInfo", (req, res) => {
+    var flowName = req.body.data.flowName;
+    var path = req.body.data.path;
+    var pathName = req.body.data.pathname;
+    var endStep = req.body.data.endStep;
+    var pathid = req.body.data.pathid;
+    dbo.collection("PathCollection").insertOne(
+      {
+        flowname: flowName,
+        pathid: pathid,
+        path: path,
+        pathname: pathName,
+        endstep: endStep,
+      },
+      function (err, res) {
+        if (err) throw err;
+      }
+    );
+    res.send("inserted into path collection");
+  });
+
+  // app.get("/get/flows/pathInfo", (req, res) => {
+  //   var flowName = req.query.flowName;
+  //   console.log("path", flowName);
+  //   dbo
+  //     .collection("PathCollection")
+  //     .find({ flowname: flowName })
+  //     .toArray(function (err, pathDetails) {
+  //       if (err) throw err;
+  //       res.send(pathDetails);
+  //     });
+  // });
+
+  app.get("/get/flows/pathInfo", (req, res) => {
+    dbo
+      .collection("PathCollection")
+      .find({})
+      .toArray(function (err, pathDetails) {
+        if (err) throw err;
+        res.send(pathDetails);
+      });
+  });
+
+  app.put("/update/flows/pathInfo", (req, res) => {
+    var flowName = req.body.data.flowName;
+    var path = req.body.data.path;
+    var pathName = req.body.data.pathname;
+    console.log(req.body.data);
+    dbo
+      .collection("PathCollection")
+      .updateOne(
+        { flowname: flowName, pathname: pathName },
+        { $set: { path: path } },
+        function (err, res) {
+          if (err) throw err;
+        }
+      );
+    res.send("path updated");
   });
 
   // app.put("/update-after-delete/flows/steps", (req, res) => {
@@ -568,6 +699,14 @@ MongoClient.connect(url, function (err, db) {
           actionObj = {
             Type: type,
             Command: req.query.command,
+          };
+        } else if (type === "Find NodeDetails") {
+          actionObj = {
+            Type: type,
+          };
+        } else if (type === "Connect") {
+          actionObj = {
+            Type: type,
           };
         } else {
           actionObj = {

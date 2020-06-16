@@ -13,6 +13,11 @@ class Editor extends Component {
       pastetext: "",
       rectangles: [],
       drawRect: false,
+      textareaVal: "",
+      selectedText: "",
+      highlightedText: [],
+      readOnly: false,
+      newSelect: [],
     };
   }
 
@@ -109,14 +114,147 @@ class Editor extends Component {
     this.canvas.onmouseup = null;
     this.canvas.onmousemove = null;
   }
+
+  onTextAreaChange = (e) => {
+    this.setState(
+      {
+        textareaVal: e.target.value,
+      },
+      () => console.log("text area", this.state.textareaVal)
+    );
+  };
+
+  onMark = () => {
+    this.setState((prevState) => ({ readOnly: !prevState.readOnly }));
+  };
+
+  highlightText = () => {
+    let textVal = this.refs.myTextarea;
+    console.log("textval", textVal.value);
+    let cursorStart = textVal.selectionStart;
+    this.setState({ start: cursorStart });
+    let cursorEnd = textVal.selectionEnd;
+    this.setState({ end: cursorEnd });
+    console.log("start - ", cursorStart + "and end -", cursorEnd);
+    let selectedText = this.state.textareaVal.substring(cursorStart, cursorEnd);
+    this.setState({ selectedText: selectedText });
+    let insertObj = {};
+    insertObj = { text: selectedText, start: cursorStart, end: cursorEnd };
+    let array = [...this.state.newSelect];
+    // if (array.length !== 0) {
+    //   array.map((obj, index) => {
+    //     if (cursorStart < obj.start) {
+    //       array.splice(index, 0, insertObj);
+    //     } else {
+    //       array.push(insertObj);
+    //     }
+    //   });
+    // } else {
+    //   array.push(insertObj);
+    // }
+    array.push(insertObj);
+    this.setState({ newSelect: array });
+    console.log("array", array);
+    let highlightedText = [];
+    for (let i = 0; i < array.length; i++) {
+      if (i === 0 && array.length === 1) {
+        highlightedText.push(
+          <>
+            {this.state.textareaVal.substring(0, array[i].start)}
+            <mark style={{ backgroundColor: "yellow" }}>{array[i].text}</mark>
+            {this.state.textareaVal.substring(array[i].end)}
+          </>
+        );
+      } else if (i === 0 && array.length > 1) {
+        highlightedText.push(
+          <>
+            {this.state.textareaVal.substring(0, array[i].start)}
+            <mark style={{ backgroundColor: "yellow" }}>{array[i].text}</mark>
+            {this.state.textareaVal.substring(
+              array[i].end,
+              array[i + 1].start - 1
+            )}
+          </>
+        );
+      } else if (i > 0 && i !== array.length - 1) {
+        highlightedText.push(
+          <>
+            {/* {this.state.textareaVal.substring(array[i - 1].end, array[i].start)} */}
+            <mark style={{ backgroundColor: "yellow" }}>{array[i].text}</mark>
+            {this.state.textareaVal.substring(
+              array[i].end,
+              array[i + 1].start - 1
+            )}
+          </>
+        );
+      } else if (i > 0 && i == array.length - 1) {
+        highlightedText.push(
+          <>
+            {/* {this.state.textareaVal.substring(array[i - 1].end, array[i].start)} */}
+            <mark style={{ backgroundColor: "yellow" }}>{array[i].text}</mark>
+            {this.state.textareaVal.substring(array[i].end)}
+          </>
+        );
+      }
+    }
+
+    // let highlightedText;
+    // highlightedText = (
+    //   <span>
+    //     {this.state.textareaVal.substring(0, cursorStart)}
+    //     <mark style={{ backgroundColor: "yellow" }}> {selectedText}</mark>
+    //     {this.state.textareaVal.substring(cursorEnd)}
+    //   </span>
+    // );
+    console.log("highlight", highlightedText);
+    this.setState({ highlightedText: highlightedText });
+  };
   render() {
     return (
       <div className="editor" style={{ position: "fixed", left: 50, top: 10 }}>
         <div className="header">
-          <button onClick={this.marktext}>Mark</button>
+          <button
+            //onClick={this.highlightText}
+            onClick={this.onMark}
+          >
+            Mark
+          </button>
         </div>
         <div className="realeditw" id="realeditw">
-          <textarea className="realedit" id="realedit"></textarea>
+          <div className="backdrop">
+            <div className="highlights">
+              {/* bring <mark></mark> here */}
+              <span>
+                {this.state.highlightedText.map((highlight, index) => {
+                  return (
+                    <React.Fragment key={index}>{highlight}</React.Fragment>
+                  );
+                })}
+              </span>
+            </div>
+          </div>
+          <textarea
+            className="realedit"
+            id="realedit"
+            ref="myTextarea"
+            onMouseUp={this.state.readOnly ? this.highlightText : null}
+            value={this.state.textareaVal}
+            readOnly={this.state.readOnly}
+            onChange={(event) => {
+              this.onTextAreaChange(event);
+            }}
+          ></textarea>
+        </div>
+        <div className="sideedit">
+          {this.state.newSelect.map((select, index) => {
+            return (
+              <p key={index}>
+                Text - {select.text} <br />
+                StartPosition - {select.start} <br />
+                EndPosition - {select.end}
+              </p>
+            );
+          })}
         </div>
         <div className="footer"></div>
         <div id="result"></div>

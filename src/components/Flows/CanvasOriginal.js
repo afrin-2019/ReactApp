@@ -4,6 +4,7 @@ import PropertyBar from "./PropertyBar";
 import Axios from "axios";
 //var pos1, pos2, pos3, pos4;
 var divList = [];
+let ind;
 class Canvas extends Component {
   constructor(props) {
     super(props);
@@ -14,8 +15,9 @@ class Canvas extends Component {
       //openSideBar: false,
       selectedStep: "",
       pathList: [],
+      newPath: [],
     };
-    this.reff = React.createRef();
+    this.canvasreff = React.createRef();
   }
 
   componentDidMount() {
@@ -58,7 +60,15 @@ class Canvas extends Component {
     this.setState({ openSideBar: false });
     //document.getElementById("main1").style.marginRight = "0";
   };
-  addPath = () => {};
+  // addPath = (pathid, d, flowname) => {
+  //   console.log("add path in - ", flowname);
+  //   if (flowname === this.props.flowName) {
+  //     ind = ++ind;
+  //     this.setState({
+  //       newPath: [...this.state.newPath, <path key={ind} id={pathid} d={d} />],
+  //     });
+  //   }
+  // };
   render() {
     let divList, pathList;
     divList = (
@@ -83,6 +93,8 @@ class Canvas extends Component {
                   stepClicked={this.handleStepClick}
                   flowList={this.props.flowList}
                   pathInfo={this.props.pathInfo}
+                  //addPath={this.addPath}
+                  canvasRef={this.canvasreff}
                 />
               );
             });
@@ -95,6 +107,7 @@ class Canvas extends Component {
       console.log("pathlist flow name", this.props.flowName);
       if (path.flowname === this.props.flowName) {
         pathname = path.pathname.split("-");
+        //ind = index;
         return <path key={index} id={pathname[0]} d={path.path} />;
       }
     });
@@ -105,7 +118,7 @@ class Canvas extends Component {
 
         <div
           id="canvas"
-          ref="canvas"
+          ref={this.canvasreff}
           //style={{ width: this.state.openSideBar ? "40%" : "70%" }}
         >
           <div id="topcanvas">
@@ -129,7 +142,10 @@ class Canvas extends Component {
             </svg>
           </div> */}
           <div id="canvas1">
-            <svg id="svg">{pathList}</svg>
+            <svg id="svg">
+              {pathList}
+              {/* {this.state.newPath} */}
+            </svg>
           </div>
           <div>{divList}</div>
         </div>

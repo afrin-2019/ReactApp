@@ -38,6 +38,34 @@ class ActionTabContent extends Component {
     this.setState({ command: e.target.value });
   };
 
+  onConfirmNode = () => {
+    Axios.get("http://localhost:5001/flow/content/action", {
+      params: {
+        flowName: this.props.flowSelected,
+        stepNo: this.props.stepNo,
+        type: "Find NodeDetails",
+      },
+    }).then((res) => {
+      console.log("res", res);
+      this.setState({ disabled: true });
+      this.props.enableAdd();
+    });
+  };
+
+  onConfirmConnect = () => {
+    Axios.get("http://localhost:5001/flow/content/action", {
+      params: {
+        flowName: this.props.flowSelected,
+        stepNo: this.props.stepNo,
+        type: "Connect",
+      },
+    }).then((res) => {
+      console.log("res", res);
+      this.setState({ disabled: true });
+      this.props.enableAdd();
+    });
+  };
+
   onconfirmCommand = () => {
     console.log("command", this.state.command);
     console.log("flowList", this.props.flowList);
@@ -93,6 +121,30 @@ class ActionTabContent extends Component {
     // console.log("props in action", this.props);
     // console.log("action state", this.state);
     let commandContent;
+    if (this.state.action === "1") {
+      commandContent = (
+        <button
+          style={{ margin: 2 }}
+          onClick={this.onConfirmNode}
+          disabled={this.state.disabled}
+        >
+          {" "}
+          save
+        </button>
+      );
+    }
+    if (this.state.action === "2") {
+      commandContent = (
+        <button
+          style={{ margin: 2 }}
+          onClick={this.onConfirmConnect}
+          disabled={this.state.disabled}
+        >
+          {" "}
+          save
+        </button>
+      );
+    }
     if (this.state.action === "3") {
       commandContent = (
         <div style={{ margin: 10 }}>

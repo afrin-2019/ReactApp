@@ -145,10 +145,14 @@ class StepDetails1 extends Component {
   deleteAction = (id, action, value) => {
     //console.log("delete", this.state.content);
     let contentArray = Object.assign([], this.state.content);
+    console.log("contentArray", contentArray);
     contentArray.map((content, index) => {
+      console.log("content in delete", content.props.id);
       if (content.props.id === id) {
         contentArray.splice(index, 1);
-        this.setState({ content: contentArray });
+        this.setState({ content: contentArray }, () =>
+          console.log("after delete")
+        );
       }
     });
     let request = {};
@@ -278,7 +282,28 @@ class StepDetails1 extends Component {
                 if (content.Step === this.props.selectedStep) {
                   if (content.Action.length !== 0) {
                     return content.Action.map((action1, index) => {
-                      if (action1.Type === "Run a Command") {
+                      if (
+                        action1.Type === "Find NodeDetails" ||
+                        action1.Type === "Connect"
+                      ) {
+                        if (action1.Type === "Find NodeDetails") {
+                          action = "1";
+                        } else {
+                          action = "2";
+                        }
+                        return (
+                          <ActionTabContent
+                            key={index}
+                            selectedAction={action}
+                            id={index}
+                            enableAdd={() => this.enableButton()}
+                            handleDelete={this.deleteAction}
+                            flowList={this.props.handleFlowList}
+                            flowSelected={this.props.flowSelected}
+                            stepNo={this.props.selectedStep}
+                          />
+                        );
+                      } else if (action1.Type === "Run a Command") {
                         action = "3";
                         val = action1.Command;
                         return (
