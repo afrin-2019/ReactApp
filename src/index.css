@@ -351,7 +351,7 @@ path:hover {
   background-color: black;
   z-index: 10;
   height: 500px;
-  width: 1000px;
+  width: 900px;
   display: inline-block;
   position: absolute;
 }
@@ -363,35 +363,66 @@ path:hover {
   position: absolute;
 }
 .realeditw {
+  display: block;
   top: 30px;
   width: 500px;
   height: 440px;
   background-color: pink;
   position: absolute;
   overflow: auto;
+  margin: 0 auto;
 }
 .backdrop {
   width: 200%;
   height: 200%;
+  /* width: 500px;
+  height: 440px; */
   position: absolute;
   z-index: 1;
+  margin: 0;
   background-color: #fff;
-  pointer-events: none;
-  transition: transform 1s;
+  /* pointer-events: none; */
+  /* transition: transform 1s; */
 }
 .realedit {
   width: 200%;
   height: 200%;
-  font-size: medium;
+  /* width: 500px;
+  height: 440px; */
   position: absolute;
   z-index: 2;
-  background-color: transparent;
+  background-color: #fff;
+  margin: 0;
+  /* transition: transform 1s; */
+}
+
+.highlights,
+.realedit {
+  padding: 10px;
+  font: 14px/22px "Open Sans", sans-serif;
+  /* letter-spacing: 1px; */
+}
+
+.highlights {
+  /* width: 200%;
+  height: 200%; */
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  color: transparent;
+  z-index: 1;
 }
 
 .sideedit {
-  left: 510px;
+  height: 500px;
+  width: 400px;
+  left: 500px;
   position: absolute;
   z-index: 1;
+  overflow: auto;
+  background-color: lightgray;
+  padding: 10px;
+  font-weight: bold;
+  font: "sans-serif";
 }
 svg {
   position: absolute;
@@ -435,25 +466,14 @@ rect {
   position: absolute;
 }
 .rectangle {
-  border: 1px solid white;
+  border: 1px solid black;
   position: absolute;
-}
-
-.highlights {
-  width: 200%;
-  height: 200%;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  color: transparent;
-  font-size: medium;
-  z-index: 1;
 }
 
 mark {
   color: transparent;
-  background-color: yellow; /* or whatever */
 }
 
-textarea::selection {
+/* textarea::selection {
   background-color: white;
-}
+} */

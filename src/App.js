@@ -31,14 +31,10 @@ function App() {
             <Switch>
               <Route exact path={"/"} component={Login} />
 
-              <PrivateRoute exact path={"/dashboard"} component={Dashboard} />
-              <PrivateRoute
-                exact
-                path={"/connectivity"}
-                component={ConnectivityNew}
-              />
-              <PrivateRoute exact path={"/flows"} component={Flow} />
-              <PrivateRoute exact path={"/nodes"} component={Nodes} />
+              <Route exact path={"/dashboard"} component={Dashboard} />
+              <Route exact path={"/connectivity"} component={ConnectivityNew} />
+              <Route exact path={"/flows"} component={Flow} />
+              <Route exact path={"/nodes"} component={Nodes} />
             </Switch>
           </Router>
         </AuthContext.Provider>

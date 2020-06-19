@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import { render } from "@testing-library/react";
 //import "./editor.css";
+import $ from "jquery";
+let interval;
 let i = 1;
 class Editor extends Component {
   constructor(props) {
@@ -13,11 +15,12 @@ class Editor extends Component {
       pastetext: "",
       rectangles: [],
       drawRect: false,
-      textareaVal: "",
+      divVal: "",
       selectedText: "",
       highlightedText: [],
-      readOnly: false,
+      editable: true,
       newSelect: [],
+      format: false,
     };
   }
 
@@ -61,8 +64,8 @@ class Editor extends Component {
     //   this.canvas.style.cursor = "default";
     //   console.log("finsihed.");
     // } else {
-    this.mouse.x = e.clientX;
-    this.mouse.y = e.clientY;
+    this.mouse.x = e.clientX - 50;
+    this.mouse.y = e.clientY - 40;
     this.element = null;
     console.log("begun.");
     this.mouse.startX = this.mouse.x;
@@ -94,8 +97,8 @@ class Editor extends Component {
     e.preventDefault();
     console.log("in draw rect", this.mouse.x);
     console.log("in draw rect", this.mouse.startX);
-    this.mouse.x = e.clientX;
-    this.mouse.y = e.clientY;
+    this.mouse.x = e.clientX - 50;
+    this.mouse.y = e.clientY - 40;
     if (this.element !== null) {
       this.element.style.width = this.mouse.x - this.mouse.startX + "px";
       this.element.style.height = this.mouse.y - this.mouse.startY + "px";
@@ -111,107 +114,90 @@ class Editor extends Component {
     }
   };
   rectstop() {
-    this.canvas.onmouseup = null;
+    this.canvas.onmouseup = this.highlightText;
     this.canvas.onmousemove = null;
   }
 
-  onTextAreaChange = (e) => {
+  onDivChange = (e) => {
     this.setState(
       {
-        textareaVal: e.target.value,
+        divVal: e.target.value,
       },
-      () => console.log("text area", this.state.textareaVal)
+      () => console.log("value", this.state.divVal)
     );
   };
-
   onMark = () => {
-    this.setState((prevState) => ({ readOnly: !prevState.readOnly }));
+    this.setState((prevState) => ({ editable: !prevState.editable }));
   };
 
-  highlightText = () => {
-    let textVal = this.refs.myTextarea;
-    console.log("textval", textVal.value);
-    let cursorStart = textVal.selectionStart;
-    this.setState({ start: cursorStart });
-    let cursorEnd = textVal.selectionEnd;
-    this.setState({ end: cursorEnd });
-    console.log("start - ", cursorStart + "and end -", cursorEnd);
-    let selectedText = this.state.textareaVal.substring(cursorStart, cursorEnd);
-    this.setState({ selectedText: selectedText });
-    let insertObj = {};
-    insertObj = { text: selectedText, start: cursorStart, end: cursorEnd };
-    let array = [...this.state.newSelect];
-    // if (array.length !== 0) {
-    //   array.map((obj, index) => {
-    //     if (cursorStart < obj.start) {
-    //       array.splice(index, 0, insertObj);
-    //     } else {
-    //       array.push(insertObj);
-    //     }
-    //   });
-    // } else {
-    //   array.push(insertObj);
-    // }
-    array.push(insertObj);
-    this.setState({ newSelect: array });
-    console.log("array", array);
-    let highlightedText = [];
-    for (let i = 0; i < array.length; i++) {
-      if (i === 0 && array.length === 1) {
-        highlightedText.push(
-          <>
-            {this.state.textareaVal.substring(0, array[i].start)}
-            <mark style={{ backgroundColor: "yellow" }}>{array[i].text}</mark>
-            {this.state.textareaVal.substring(array[i].end)}
-          </>
-        );
-      } else if (i === 0 && array.length > 1) {
-        highlightedText.push(
-          <>
-            {this.state.textareaVal.substring(0, array[i].start)}
-            <mark style={{ backgroundColor: "yellow" }}>{array[i].text}</mark>
-            {this.state.textareaVal.substring(
-              array[i].end,
-              array[i + 1].start - 1
-            )}
-          </>
-        );
-      } else if (i > 0 && i !== array.length - 1) {
-        highlightedText.push(
-          <>
-            {/* {this.state.textareaVal.substring(array[i - 1].end, array[i].start)} */}
-            <mark style={{ backgroundColor: "yellow" }}>{array[i].text}</mark>
-            {this.state.textareaVal.substring(
-              array[i].end,
-              array[i + 1].start - 1
-            )}
-          </>
-        );
-      } else if (i > 0 && i == array.length - 1) {
-        highlightedText.push(
-          <>
-            {/* {this.state.textareaVal.substring(array[i - 1].end, array[i].start)} */}
-            <mark style={{ backgroundColor: "yellow" }}>{array[i].text}</mark>
-            {this.state.textareaVal.substring(array[i].end)}
-          </>
-        );
+  highlightText = (e) => {
+    var range;
+    var selValue = window.getSelection().toString();
+    var sel = window.getSelection();
+    console.log("sel", sel.toString());
+    if (sel.toString() !== "") {
+      range = sel.getRangeAt(0);
+      range.deleteContents();
+      // Create the marker element containing a single invisible character using DOM methods and insert it
+      var markerEl = document.createElement("mark");
+      markerEl.id = "markerid" + i;
+      markerEl.style.backgroundColor = "yellow";
+      markerEl.style.color = "black";
+      markerEl.appendChild(document.createTextNode(selValue));
+      range.insertNode(markerEl);
+      i++;
+    }
+  };
+
+  onPaste = (e) => {
+    //e.preventDefault();
+    var el = this.refs.myDiv;
+    console.log("el", el);
+    this.setState({ format: true });
+    interval = setInterval(() => {
+      this.format();
+    }, 1000);
+
+    // e.clipboardData.items[0].getAsString((text) => {
+    //   console.log("text", text);
+    //   text.split("\n").map((line) => console.log("line", line));
+    // });
+    //var text = e.clipboardData.getData("text/html");
+    // console.log("text", text);
+    //document.execCommand("insertText", false, text);
+  };
+
+  format = () => {
+    var el = this.refs.myDiv;
+    console.log("el", el.children.length);
+    let newContent = [];
+    for (let i in el.children) {
+      if (el.children[i].tagName === "P") {
+        console.log("child", el.children[i].children[0]);
+        newContent = [...newContent, el.children[i].children[0]];
       }
     }
+    el.innerHTML = "";
+    let appContent = "";
+    newContent.map((content) => {
+      console.log(content);
+      appContent = document.createElement("div");
+      appContent.append(content);
+      console.log("appContent", appContent);
+      el.append(appContent);
+    });
 
-    // let highlightedText;
-    // highlightedText = (
-    //   <span>
-    //     {this.state.textareaVal.substring(0, cursorStart)}
-    //     <mark style={{ backgroundColor: "yellow" }}> {selectedText}</mark>
-    //     {this.state.textareaVal.substring(cursorEnd)}
-    //   </span>
-    // );
-    console.log("highlight", highlightedText);
-    this.setState({ highlightedText: highlightedText });
+    console.log("newcontent", newContent);
+    clearInterval(interval);
   };
+
   render() {
     return (
-      <div className="editor" style={{ position: "fixed", left: 50, top: 10 }}>
+      <div
+        className="editor"
+        style={{ position: "fixed", left: 50, top: 10 }}
+        ref="mainDiv"
+      >
         <div className="header">
           <button
             //onClick={this.highlightText}
@@ -219,45 +205,25 @@ class Editor extends Component {
           >
             Mark
           </button>
+          {this.state.format ? (
+            <button onClick={this.format}>Format</button>
+          ) : null}
+          {/* <button onClick={this.marktext}>select</button> */}
         </div>
         <div className="realeditw" id="realeditw">
-          <div className="backdrop">
-            <div className="highlights">
-              {/* bring <mark></mark> here */}
-              <span>
-                {this.state.highlightedText.map((highlight, index) => {
-                  return (
-                    <React.Fragment key={index}>{highlight}</React.Fragment>
-                  );
-                })}
-              </span>
-            </div>
-          </div>
-          <textarea
+          <div
             className="realedit"
             id="realedit"
-            ref="myTextarea"
-            onMouseUp={this.state.readOnly ? this.highlightText : null}
-            value={this.state.textareaVal}
-            readOnly={this.state.readOnly}
-            onChange={(event) => {
-              this.onTextAreaChange(event);
-            }}
-          ></textarea>
+            ref="myDiv"
+            contentEditable={this.state.editable}
+            onMouseUp={
+              !this.state.editable ? (e) => this.highlightText(e) : null
+            }
+            onPaste={(e) => this.onPaste(e)}
+          ></div>
         </div>
-        <div className="sideedit">
-          {this.state.newSelect.map((select, index) => {
-            return (
-              <p key={index}>
-                Text - {select.text} <br />
-                StartPosition - {select.start} <br />
-                EndPosition - {select.end}
-              </p>
-            );
-          })}
-        </div>
+        <div className="sideedit"></div>
         <div className="footer"></div>
-        <div id="result"></div>
       </div>
     );
   }
