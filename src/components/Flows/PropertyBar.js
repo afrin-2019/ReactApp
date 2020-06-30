@@ -29,6 +29,8 @@ class PropertyBar extends Component {
             this.props.attachFlow(condition, value)
           }
           disableAttach={() => this.props.disableAttach()}
+          refresh={this.props.refresh}
+          deleteFlow={(req) => this.props.deleteFlow(req)}
         />
       </div>
     );

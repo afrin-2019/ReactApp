@@ -3,6 +3,7 @@ import ActionTabContent from "./ActionTabContent";
 import LinkTabContent from "./LinkTabContent";
 import Axios from "axios";
 let i = 1;
+let linkKey;
 //let enable = false;
 class StepDetails1 extends Component {
   state = {
@@ -17,8 +18,28 @@ class StepDetails1 extends Component {
   componentDidMount() {
     document.getElementById("defaultOpen").click();
     console.log("step detail mount");
-    this.refresh();
-    this.setContent();
+    ///this.refresh();
+    //this.setContent();
+    Axios.get("http://localhost:5001/get/flows/flowContent").then((res) => {
+      this.setState({ flowContent: res.data });
+
+      res.data.map((content) => {
+        console.log("content", content + ", ", this.props.flowSelected);
+        if (content.Flow === this.props.flowSelected) {
+          if (content.Step === this.props.selectedStep) {
+            if (content.Link.length !== 0) {
+              content.Link.map((link, index) => {
+                linkKey = index + 1;
+                this.addLink(index, link);
+              });
+            }
+          }
+        } else {
+          linkKey = 0;
+        }
+      });
+      this.setContent();
+    });
   }
 
   refresh = () => {
@@ -54,8 +75,10 @@ class StepDetails1 extends Component {
         ...this.state.link_content,
         <LinkTabContent
           ind={j}
-          key={1}
-          id={1}
+          // key={1}
+          // id={1}
+          key={linkKey}
+          id={linkKey}
           flowList={this.props.handleFlowList}
           flowSelected={this.props.flowSelected}
           linkContent={this.onLinkContent}
@@ -122,14 +145,17 @@ class StepDetails1 extends Component {
     this.setState({ disableLink: true });
     this.props.disableAttach();
     i++;
+    linkKey++;
     let j = -1;
     this.setState({
       link_content: [
         ...this.state.link_content,
         <LinkTabContent
           ind={j}
-          key={i}
-          id={i}
+          // key={i}
+          // id={i}
+          key={linkKey}
+          id={linkKey}
           flowList={this.props.handleFlowList}
           flowSelected={this.props.flowSelected}
           linkContent={this.onLinkContent}
@@ -142,8 +168,34 @@ class StepDetails1 extends Component {
     });
   };
 
+  addLink = (index, link) => {
+    console.log("in add link");
+    this.setState({
+      link_content: [
+        ...this.state.link_content,
+
+        <LinkTabContent
+          ind={index}
+          key={index}
+          id={index}
+          flowList={this.props.handleFlowList}
+          flowSelected={this.props.flowSelected}
+          linkContent={this.onLinkContent}
+          handleDelete={this.deleteLink}
+          stepNo={this.props.selectedStep}
+          condition={link.Condition}
+          path={link.NextStep.path}
+          selectValue={link.NextStep.name}
+          enableAddLink={() => this.enableLinkButton()}
+          attachFlow={(condition, value) => this.attachFlow(condition, value)}
+        />,
+      ],
+    });
+  };
+
   deleteAction = (id, action, value) => {
     //console.log("delete", this.state.content);
+
     let contentArray = Object.assign([], this.state.content);
     console.log("contentArray", contentArray);
     contentArray.map((content, index) => {
@@ -189,6 +241,7 @@ class StepDetails1 extends Component {
 
   deleteLink = (id, condition, step) => {
     let contentArray = Object.assign([], this.state.link_content);
+    console.log("in delete link", this.state.link_content);
     contentArray.map((content, index) => {
       console.log("props", content.props.id);
       console.log("id", id);
@@ -197,6 +250,7 @@ class StepDetails1 extends Component {
         this.setState({ link_content: contentArray });
       }
     });
+
     let request = {};
     request = {
       flowname: this.props.flowSelected,
@@ -204,11 +258,15 @@ class StepDetails1 extends Component {
       condition: condition,
       step: step,
     };
+    console.log("del req", request);
     Axios.delete("http://localhost:5001/delete/flow/link", {
       data: request,
     }).then((res) => {
       console.log("res", res);
       this.refresh();
+      this.props.refresh();
+      this.props.deleteFlow(request);
+
       //this.setContent();
     });
   };
@@ -365,38 +423,38 @@ class StepDetails1 extends Component {
                 <i className="fa fa-plus" style={{ margin: 1 }}></i>
               </button>
             </div>
-            {this.state.flowContent.map((content) => {
+            {/* {this.state.flowContent.map((content) => {
               console.log("content", content + ", ", this.props.flowSelected);
               if (content.Flow === this.props.flowSelected) {
                 if (content.Step === this.props.selectedStep) {
                   if (content.Link.length !== 0) {
                     return content.Link.map((link, index) => {
                       //console.log("link", link, "index", index);
-
-                      return (
-                        <LinkTabContent
-                          ind={index}
-                          key={index}
-                          id={index}
-                          flowList={this.props.handleFlowList}
-                          flowSelected={this.props.flowSelected}
-                          linkContent={this.onLinkContent}
-                          handleDelete={this.deleteLink}
-                          stepNo={this.props.selectedStep}
-                          condition={link.Condition}
-                          path={link.NextStep.path}
-                          selectValue={link.NextStep.name}
-                          enableAddLink={() => this.enableLinkButton()}
-                          attachFlow={(condition, value) =>
-                            this.attachFlow(condition, value)
-                          }
-                        />
-                      );
+                      this.addLink(index, link);
+                      // return (
+                      //   <LinkTabContent
+                      //     ind={index}
+                      //     key={index}
+                      //     id={index}
+                      //     flowList={this.props.handleFlowList}
+                      //     flowSelected={this.props.flowSelected}
+                      //     linkContent={this.onLinkContent}
+                      //     handleDelete={this.deleteLink}
+                      //     stepNo={this.props.selectedStep}
+                      //     condition={link.Condition}
+                      //     path={link.NextStep.path}
+                      //     selectValue={link.NextStep.name}
+                      //     enableAddLink={() => this.enableLinkButton()}
+                      //     attachFlow={(condition, value) =>
+                      //       this.attachFlow(condition, value)
+                      //     }
+                      //   />
+                      // );
                     });
                   }
                 }
               }
-            })}
+            })} */}
             {this.state.link_content}
           </div>
         </div>

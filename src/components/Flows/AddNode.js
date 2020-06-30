@@ -17,7 +17,9 @@ let pathid,
   b,
   sp1,
   drawline,
+  parentTarget,
   newPathId = 10;
+
 class AddNode extends Component {
   constructor(props) {
     super(props);
@@ -51,11 +53,36 @@ class AddNode extends Component {
           if (content.Step === this.props.stepName) {
             content.Link.map((link, index) => {
               this.attachFlow(link.Condition, link.NextStep.path);
+              console.log("flowlist in attach flow", this.props.flowList);
+              this.props.flowList.map((flow) => {
+                if (flow.name === this.props.flowName) {
+                  console.log("flow", flow.steps);
+                }
+              });
             });
           }
         }
       });
       //console.log("flow content", res.data);
+      {
+        this.props.pathInfo.map((path, index) => {
+          if (path.flowname === this.props.flowName) {
+            if (path.endstep === this.props.stepName) {
+              // let p = (
+              //   <p key={index} hidden>
+              //     {path.pathname}
+              //   </p>
+              // );
+              let p = document.createElement("p");
+              p.hidden = "true";
+              p.innerHTML = path.pathname;
+              p.key = index;
+              let doc = document.getElementById("item" + this.props.index);
+              doc.appendChild(p);
+            }
+          }
+        });
+      }
     });
     axios.get("http://localhost:5001/get/flows/pathinfo").then((res) => {
       if (res.data.length !== 0) {
@@ -102,7 +129,7 @@ class AddNode extends Component {
     for (let it = 0; it < a.length; it++) {
       console.log(a[it].innerHTML);
       let newId = a[it].innerHTML.split("-");
-      //console.log("newId", newId);
+      console.log("newId", newId);
       b = document.getElementById(newId[0]);
       sp = b.getAttribute("d").split(" ");
       //console.log("sp", sp);
@@ -130,6 +157,7 @@ class AddNode extends Component {
     for (let it = 0; it < sp.length; it++) {
       console.log(sp[it].innerHTML);
       let newId = sp[it].innerHTML.split("-");
+      console.log("newId span", newId);
       b = document.getElementById(newId[0]);
       console.log("b", b);
       sp1 = b.getAttribute("d").split(" ");
@@ -166,7 +194,10 @@ class AddNode extends Component {
       };
       axios
         .put("http://localhost:5001/update/flows/pathInfo", { data: req })
-        .then((res) => console.log(res));
+        .then((res) => {
+          console.log(res);
+          //b.setAttribute("d", d);
+        });
     }
   };
   closeDragElement = (e) => {
@@ -248,13 +279,14 @@ class AddNode extends Component {
 
               <div
                 className="sideitembox"
-                id={"sideitembox" + this.state.j}
+                id={"item" + this.props.index + "sideitembox" + this.state.j}
                 onMouseDown={this.startLine}
               ></div>
               {this.props.pathInfo.map((path, index) => {
                 if (path.flowname === this.props.flowName) {
                   pathid = path.pathname.split("-");
-                  spanId = "sideitembox" + this.state.j;
+                  spanId =
+                    "item" + this.props.index + "sideitembox" + this.state.j;
 
                   if (pathid[1] === spanId) {
                     return (
@@ -318,8 +350,9 @@ class AddNode extends Component {
     canvas = document.getElementById("canvas1");
     //console.log(canvas);
     //canvas.appendChild(svg);
+    console.log("event", event.target.id);
     targetid = document.getElementById(event.target.id);
-
+    parentTarget = document.getElementById("item" + this.props.index);
     newPathId += 1;
     canvas.onmousemove = this.drawLine;
     canvas.onmouseup = this.endLine;
@@ -380,6 +413,8 @@ class AddNode extends Component {
       this.hiddenspan = document.createElement("span");
       this.hiddenspan.hidden = "true";
       this.hiddenspan.innerHTML = pathname;
+      console.log("exact", targetid.parentElement.parentElement);
+      console.log(parentTarget.children);
       targetid.parentElement.appendChild(this.hiddenspan);
       let req = {
         flowName: this.props.flowName,
@@ -406,6 +441,21 @@ class AddNode extends Component {
     canvas.onmousemove = null;
   };
 
+  deleteFlow = (req) => {
+    console.log("req del", req);
+    console.log("div", this.state.addDiv);
+    this.state.addDiv.map((div, index) => {
+      console.log("child", div.props.children);
+      let child = div.props.children;
+      console.log(child.props.children[0].props.children);
+      if (req.condition === child.props.children[0].props.children) {
+        let divArray = [...this.state.addDiv];
+        divArray.splice(index, 1);
+        this.setState({ addDiv: divArray });
+      }
+    });
+  };
+
   render() {
     let i = this.props.index;
     return (
@@ -430,7 +480,7 @@ class AddNode extends Component {
             {this.props.stepName}
           </div>
           {this.state.addDiv}
-          {this.props.pathInfo.map((path, index) => {
+          {/* {this.props.pathInfo.map((path, index) => {
             if (path.flowname === this.props.flowName) {
               if (path.endstep === this.props.stepName) {
                 return (
@@ -440,7 +490,7 @@ class AddNode extends Component {
                 );
               }
             }
-          })}
+          })} */}
         </div>
 
         {this.state.openSideBar ? (
@@ -451,6 +501,8 @@ class AddNode extends Component {
             selectedFlow={this.props.flowName}
             attachFlow={(condition, value) => this.attachFlow(condition, value)}
             disableAttach={() => this.disableAttach()}
+            refresh={this.props.refresh}
+            deleteFlow={(req) => this.deleteFlow(req)}
           />
         ) : null}
       </React.Fragment>

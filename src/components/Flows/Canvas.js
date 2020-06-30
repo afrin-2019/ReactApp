@@ -185,6 +185,7 @@ class Canvas extends Component {
   //     console.log("path", path);
   //   });
   // };
+
   render() {
     //console.log("in canvas render");
     console.log("pathlist", this.state.pathList);
@@ -216,6 +217,7 @@ class Canvas extends Component {
                   endLine={this.endLine}
                   refreshPath={this.props.refreshPath}
                   removePath={this.removePath}
+
                   //canvasRef={this.canvasreff}
                 />
               );

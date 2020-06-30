@@ -243,7 +243,12 @@ class ActionTabContent extends Component {
           {commandContent}
         </div>
 
-        {this.state.openEditor ? <Editor /> : null}
+        {this.state.openEditor ? (
+          <Editor
+            flowName={this.props.flowSelected}
+            stepNo={this.props.stepNo}
+          />
+        ) : null}
       </div>
     );
   }

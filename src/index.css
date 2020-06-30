@@ -229,20 +229,25 @@ code {
   /* position: absolute; */
   /* z-index: 10; */
   width: 100px;
-  height: 30px;
+  height: 40px;
   background-color: gray;
   display: block;
   margin-top: 2px;
   padding: 0px;
+  font-size: 12px;
+  /* overflow-wrap: break-word; */
 }
 .stepitembox {
   /* position: absolute;
   z-index: 10; */
+  font-size: 12px;
   width: 100px;
-  height: 30px;
+  height: 40px;
   background-color: gray;
   display: inline-block;
   margin-top: 2px;
+  /* overflow-wrap: break-word; */
+
   /* padding: 0px;  */
 }
 
@@ -477,3 +482,17 @@ mark {
 /* textarea::selection {
   background-color: white;
 } */
+
+.highlighted {
+  background-color: #999;
+}
+
+.noselect {
+  cursor: default;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}

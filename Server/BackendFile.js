@@ -267,6 +267,51 @@ MongoClient.connect(url, function (err, db) {
     res.send("path updated");
   });
 
+  //post the editor content into db
+  app.post("/post/editorContent", (req, res) => {
+    dbo
+      .collection("EditorContent")
+      .insertOne(
+        {
+          FlowName: req.body.data.flowName,
+          step: req.body.data.stepNo,
+          content: req.body.data.content,
+          result: [],
+        },
+        function (err, res) {
+          if (err) throw err;
+        }
+      );
+    res.send("inserted into editor content");
+  });
+
+  //get the editor content from db
+  app.get("/get/flows/editorContent", (req, res) => {
+    dbo
+      .collection("EditorContent")
+      .find({})
+      .toArray(function (err, content) {
+        if (err) throw err;
+        res.send(content);
+      });
+  });
+
+  //post result into editor content
+  app.put("/update/flows/editorContent", (req, res) => {
+    var result = req.body.data.result;
+    var content = req.body.data.content;
+    console.log(req.body);
+    dbo
+      .collection("EditorContent")
+      .updateOne({ content: content }, { $push: { result: result } }, function (
+        err,
+        res
+      ) {
+        if (err) throw err;
+      });
+    res.send("result updated");
+  });
+
   // app.put("/update-after-delete/flows/steps", (req, res) => {
   //   var newStep = req.body.updatedStep;
   //   var oldStep = req.body.step;
@@ -856,7 +901,7 @@ MongoClient.connect(url, function (err, db) {
     let delObj = {};
     delObj = {
       Condition: req.body.condition,
-      NextStep: req.body.step,
+      //NextStep: req.body.step,
     };
     dbo
       .collection("FlowContent")

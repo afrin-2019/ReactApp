@@ -113,13 +113,12 @@ class Flow extends Component {
   };
 
   onButtonClick = (flow) => {
-    console.log("button click");
+    console.log("button click", flow);
     axios.get("http://localhost:5001/get/flows/pathInfo").then((res) => {
       console.log("path info", res.data);
-      this.setState({ pathInfo: res.data }, () =>
-        this.setState({ selectedFlow: flow })
-      );
-
+      this.setState({ pathInfo: res.data }, () => {
+        this.setState({ selectedFlow: flow });
+      });
       this.setState({ flowClicked: true });
     });
   };
@@ -329,7 +328,7 @@ class Flow extends Component {
                 refreshFlowList={this.refreshFlowList}
                 pathInfo={this.state.pathInfo}
                 refreshPath={this.refreshPathInfo}
-                rerender={this.onButtonClick}
+                rerender={(name) => this.onButtonClick(name)}
               />
             ) : null}
             {this.state.addDialog ? (
