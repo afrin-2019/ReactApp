@@ -13,7 +13,7 @@ class PropertyBar extends Component {
     console.log("in prp", this.props.step);
     console.log("props", this.props);
     return (
-      <div className="sidebar_right" id="rightSideBar">
+      <div className="sidebar_right" id={"rightSideBar" + this.props.step}>
         <button
           className="btn btn-sm btn-outline-secondary m-2 closebtn"
           onClick={this.closeBar}
@@ -31,6 +31,8 @@ class PropertyBar extends Component {
           disableAttach={() => this.props.disableAttach()}
           refresh={this.props.refresh}
           deleteFlow={(req) => this.props.deleteFlow(req)}
+          editFlow={this.props.editFlow}
+          rerender={(flowName) => this.props.rerender(flowName)}
         />
       </div>
     );

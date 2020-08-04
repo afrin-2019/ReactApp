@@ -12,12 +12,15 @@ class LinkTabContent extends Component {
       disabled: false,
       index: this.props.ind,
       isError: false,
+      alreadySaved: false,
     };
   }
 
   componentDidMount() {
     if (this.state.value) {
       this.setState({ disabled: true });
+      this.setState({ alreadySaved: true });
+      this.setState({ oldCondition: this.state.value });
     }
   }
 
@@ -60,7 +63,24 @@ class LinkTabContent extends Component {
       console.log("res", res);
       this.setState({ disabled: true });
       this.setState({ isError: false });
-      this.props.attachFlow(this.state.value, this.state.radio);
+      if (!this.state.alreadySaved) {
+        console.log(this.state.alreadySaved);
+        this.props.attachFlow(this.state.value, this.state.radio);
+        this.setState({ alreadySaved: true });
+      } else {
+        console.log(this.props.id);
+        let doc = document.getElementById("wrapitem" + this.props.id);
+        console.log(doc);
+        this.props.handleEdit(
+          this.props.id,
+          this.state.value,
+          this.state.radio,
+          this.state.step,
+          this.state.oldCondition
+        );
+        //   this.props.rerender(this.props.flowSelected);
+      }
+      this.setState({ oldCondition: this.state.value });
       this.props.enableAddLink();
     });
   };
@@ -91,7 +111,7 @@ class LinkTabContent extends Component {
     );
   };
   render() {
-    //console.log("props in link", this.props);
+    console.log("props in link", this.props);
     // console.log("index", this.state.index);
     return (
       <div

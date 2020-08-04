@@ -12,10 +12,6 @@ let prevrow, prevcell;
 class Editor extends Component {
   constructor(props) {
     super(props);
-    this.onlytext = this.onlytext.bind(this);
-    this.marktext = this.marktext.bind(this);
-    this.rectstop = this.rectstop.bind(this);
-    this.showrectangle = this.showrectangle.bind(this);
     this.state = {
       pastetext: "",
       rectangles: [],
@@ -35,8 +31,20 @@ class Editor extends Component {
       result: [],
       condition1: false,
       condition2: false,
+      condition3: false,
       id: "",
+      content: this.props.content || "",
+      result: this.props.result || [],
       options: [
+        {
+          label: "Mark Position to extract",
+          command: () => {
+            this.condition3();
+          },
+        },
+        {
+          separator: true,
+        },
         {
           label: "Mark Text to look for and its value",
           command: () => {
@@ -57,157 +65,57 @@ class Editor extends Component {
   }
 
   componentDidMount() {
+    console.log("editor-id", this.props.id);
     this.pos1 = 0;
     this.pos2 = 0;
     this.pos3 = 0;
     this.pos4 = 0;
-    Axios.get("http://localhost:5001/get/flows/editorContent").then((res) => {
-      console.log("table", res.data);
-      let len = res.data.length;
-      if (len !== 0) {
-        this.setState({ id: res.data[len - 1]._id });
-        this.setState({ content: res.data[len - 1].content });
-        var element = document.createElement(null);
-        element.innerHTML = res.data[len - 1].content;
-        element = element.firstChild;
-        this.refs.myDiv.appendChild(element);
-        document.getElementById("ta").onmousedown = this.tableMouseDown;
-        this.setState({ showCondition: true });
-        this.setState({ result: res.data[len - 1].result }, () =>
-          this.changeMarkColor()
-        );
-      }
-    });
-  }
-  onlytext(e) {
-    // alert("Hi");
-    var clearText = e.clipboardData.getData("text/plain");
-    alert(clearText);
-    //this.setState({pastetext:clearText})
-    //window.document.execCommand('insertHTML',false,clearText);
-    window.document
-      .getElementById("realedit")
-      .execCommand("insertHTML", false, clearText);
-    //event.clipboardData.getData('text/plain');
-  }
-  marktext = (e) => {
-    //window.document.getElementById("realedit").setAttribute("readonly", true);
-    this.canvas = document.getElementById("realeditw");
-    this.mouse = {
-      x: 0,
-      y: 0,
-      startX: 0,
-      startY: 0,
-    };
-    this.canvas.style.cursor = "crosshair";
-    document
-      .getElementById("realeditw")
-      .addEventListener("mousedown", this.showrectangle);
-  };
-
-  showrectangle(e) {
-    console.log("start");
-    e.preventDefault();
-    // if (this.element !== null) {
-    //   this.element = null;
-    //   this.canvas.style.cursor = "default";
-    //   console.log("finsihed.");
-    // } else {
-    this.mouse.x = e.clientX - 50;
-    this.mouse.y = e.clientY - 40;
-    this.element = null;
-    console.log("begun.");
-    this.mouse.startX = this.mouse.x;
-    this.mouse.startY = this.mouse.y;
-    this.element = document.createElement("div");
-    this.element.className = "rectangle";
-    this.element.id = "rect" + i;
-    this.element.style.zIndex = 20;
-    this.element.style.left = this.mouse.x + "px";
-    this.element.style.top = this.mouse.y + "px";
-    this.canvas.appendChild(this.element);
-    console.log("xy", this.mouse.x + "," + this.mouse.y);
-    console.log(this.element);
-    this.canvas.onmousemove = this.drawRect;
-    this.canvas.onmouseup = this.rectstop;
-    i++;
-
-    //  }
-
-    // document
-    //   .getElementById("realedit")
-    //   .addEventListener("mousemove", this.drawRect);
-    // document
-    //   .getElementById("realedit")
-    //   .addEventListener("mouseup", this.rectstop);
-  }
-
-  drawRect = (e) => {
-    e.preventDefault();
-    console.log("in draw rect", this.mouse.x);
-    console.log("in draw rect", this.mouse.startX);
-    this.mouse.x = e.clientX - 50;
-    this.mouse.y = e.clientY - 40;
-    if (this.element !== null) {
-      this.element.style.width = this.mouse.x - this.mouse.startX + "px";
-      this.element.style.height = this.mouse.y - this.mouse.startY + "px";
-      this.element.style.left =
-        this.mouse.x - this.mouse.startX < 0
-          ? this.mouse.x + "px"
-          : this.mouse.startX + "px";
-      this.element.style.top =
-        this.mouse.y - this.mouse.startY < 0
-          ? this.mouse.y + "px"
-          : this.mouse.startY + "px";
-      console.log("width", this.element.style.width);
+    // Axios.get("http://localhost:5001/get/flows/editorContent").then((res) => {
+    //   console.log("table", res.data);
+    //   let len = res.data.length;
+    //   // if (len !== 0) {
+    //   //   this.setState({ id: res.data[len - 1]._id });
+    //   //   this.setState({ content: res.data[len - 1].content });
+    //   //   var element = document.createElement(null);
+    //   //   element.innerHTML = res.data[len - 1].content;
+    //   //   element = element.firstChild;
+    //   //   this.refs.myDiv.appendChild(element);
+    //   //   document.getElementById("ta").onmousedown = this.tableMouseDown;
+    //   //   this.setState({ showCondition: true });
+    //   //   this.setState({ result: res.data[len - 1].result }, () =>
+    //   //     this.changeMarkColor()
+    //   //   );
+    //   // }
+    // });
+    if (this.state.content !== "") {
+      var element = document.createElement(null);
+      element.innerHTML = this.state.content;
+      element = element.firstChild;
+      this.refs.myDiv.appendChild(element);
+      document.getElementById("ta").onmousedown = this.tableMouseDown;
+      this.setState({ showCondition: true });
+      this.changeMarkColor();
     }
-  };
-  rectstop() {
-    this.canvas.onmouseup = this.highlightText;
-    this.canvas.onmousemove = null;
   }
-
-  onDivChange = (e) => {
-    this.setState(
-      {
-        divVal: e.target.value,
-      },
-      () => console.log("value", this.state.divVal)
-    );
-  };
-  onMark = () => {
-    this.setState((prevState) => ({ editable: !prevState.editable }));
-  };
-
-  highlightText = (e) => {
-    var range;
-    var selValue = window.getSelection().toString();
-    var sel = window.getSelection();
-    console.log("sel", sel.toString());
-    if (sel.toString() !== "") {
-      range = sel.getRangeAt(0);
-      range.deleteContents();
-      // Create the marker element containing a single invisible character using DOM methods and insert it
-      var markerEl = document.createElement("mark");
-      markerEl.id = "markerid" + i;
-      markerEl.style.backgroundColor = "yellow";
-      markerEl.style.color = "black";
-      markerEl.appendChild(document.createTextNode(selValue));
-      range.insertNode(markerEl);
-      i++;
-    }
-  };
-
   condition1 = () => {
     this.setState({ editable: false });
     this.setState({ condition1: true });
     this.setState({ condition2: false });
+    this.setState({ condition3: false });
   };
 
   condition2 = () => {
     this.setState({ editable: false });
     this.setState({ condition2: true });
     this.setState({ condition1: false });
+    this.setState({ condition3: false });
+  };
+
+  condition3 = () => {
+    this.setState({ editable: false });
+    this.setState({ condition1: false });
+    this.setState({ condition2: false });
+    this.setState({ condition3: true });
   };
 
   onPaste = (e) => {
@@ -222,42 +130,40 @@ class Editor extends Component {
 
   format = () => {
     var el = this.refs.myDiv;
+    console.log("el", el);
     console.log("el", el.children.length);
     let newContent = [];
-    for (let i in el.children) {
-      if (el.children[i].tagName === "P") {
-        console.log("child", el.children[i].children[0]);
-        newContent = [...newContent, el.children[i].children[0]];
-      }
-    }
     let table = document.createElement("table");
-    //table.style.userSelect = "none";
-    //table.className = "noselect";
-    table.contentEditable = "false";
-    table.setAttribute("readonly", true);
-    table.cellSpacing = "0";
-    table.cellPadding = "0";
-    table.id = "ta";
-    table.onmousedown = this.tableMouseDown;
+    if (el.children.length === 0) {
+      //for (let i in el) {
+      console.log("no children", el.innerHTML);
+      let data = el.innerHTML;
+      //table.style.userSelect = "none";
+      //table.className = "noselect";
+      table.contentEditable = "false";
+      table.setAttribute("readonly", true);
+      table.cellSpacing = "0";
+      table.cellPadding = "0";
+      table.id = "ta";
+      table.onmousedown = this.tableMouseDown;
 
-    let tbody = document.createElement("tbody");
-    table.append(tbody);
-    el.innerHTML = "";
-    let appContent = "";
-    newContent.map((content) => {
+      let tbody = document.createElement("tbody");
+      table.append(tbody);
+      el.innerHTML = "";
+      let appContent = "";
+
       let tr = document.createElement("tr");
 
-      let data = content.innerHTML;
-      console.log("data", content.style);
-      console.log("content", content);
-      tr.style.cssText = content.style.cssText;
+      //data.push(el.innerHTML);
+      // console.log("style", content.style.cssText);
+      console.log("data", data);
       tr.style.userSelect = "none";
       //tr.append(data);
       tbody.append(tr);
       let cntnue = true;
       if (data.length !== 0) {
-        for (let i = 0; i <= data.length; i++) {
-          // console.log("text", data[i]);
+        for (let i = 0; i < data.length; i++) {
+          //console.log("text", data[i], typeof data[i]);
           if (cntnue) {
             if (data[i] === "&") {
               i++;
@@ -280,9 +186,15 @@ class Editor extends Component {
               }
             } else if (data[i] === "<") {
               cntnue = false;
+            } else if (data[i] === " ") {
+              //console.log("in empty string");
+              let td = document.createElement("td");
+              td.innerHTML = "&nbsp;";
+              tr.append(td);
             } else {
               let td = document.createElement("td");
               td.append(data[i]);
+              //console.log("td", td);
               tr.append(td);
             }
           }
@@ -292,12 +204,101 @@ class Editor extends Component {
       //appContent.append(table);
       console.log("appContent", appContent);
       el.append(table);
-    });
 
-    console.log("newcontent", newContent);
-    clearInterval(interval);
-    this.setState({ content: table.outerHTML });
+      console.log("newcontent", newContent);
+      clearInterval(interval);
+      this.setState({ content: table.outerHTML });
+    } else {
+      for (let i in el.children) {
+        console.log(el.children[i].tagName);
+        if (el.children[i].tagName === "P") {
+          console.log("child", el.children[i].children[0]);
+          newContent = [...newContent, el.children[i].children[0]];
+          console.log("newcontent", newContent);
+        } else if (el.children[i].tagName === "DIV") {
+          console.log("child", el.children[i].innerHTML);
+          newContent = [...newContent, el.children[i]];
+        }
+      }
+
+      //table.style.userSelect = "none";
+      //table.className = "noselect";
+      table.contentEditable = "false";
+      table.setAttribute("readonly", true);
+      table.cellSpacing = "0";
+      table.cellPadding = "0";
+      table.id = "ta";
+      table.onmousedown = this.tableMouseDown;
+
+      let tbody = document.createElement("tbody");
+      table.append(tbody);
+      el.innerHTML = "";
+      let appContent = "";
+      newContent.map((content) => {
+        let tr = document.createElement("tr");
+
+        let data = content.innerHTML;
+        console.log("data", data);
+        console.log("content", content);
+        // console.log("style", content.style.cssText);
+        if (content.style) {
+          tr.style.cssText = content.style.cssText;
+        }
+        tr.style.userSelect = "none";
+        //tr.append(data);
+        tbody.append(tr);
+        let cntnue = true;
+        if (data.length !== 0) {
+          for (let i = 0; i < data.length; i++) {
+            //console.log("text", data[i], typeof data[i]);
+            if (cntnue) {
+              if (data[i] === "&") {
+                i++;
+                if (data[i] === "n") {
+                  i++;
+                  if (data[i] === "b") {
+                    i++;
+                    if (data[i] === "s") {
+                      i++;
+                      if (data[i] === "p") {
+                        i++;
+                        if (data[i] === ";") {
+                          let td = document.createElement("td");
+                          td.innerHTML = "&nbsp;";
+                          tr.append(td);
+                        }
+                      }
+                    }
+                  }
+                }
+              } else if (data[i] === "<") {
+                cntnue = false;
+              } else if (data[i] === " ") {
+                //console.log("in empty string");
+                let td = document.createElement("td");
+                td.innerHTML = "&nbsp;";
+                tr.append(td);
+              } else {
+                let td = document.createElement("td");
+                td.append(data[i]);
+                //console.log("td", td);
+                tr.append(td);
+              }
+            }
+          }
+        }
+        console.log("table", table);
+        //appContent.append(table);
+        console.log("appContent", appContent);
+        el.append(table);
+      });
+
+      console.log("newcontent", newContent);
+      clearInterval(interval);
+      this.setState({ content: table.outerHTML });
+    }
     let req = {
+      EditorId: this.props.id,
       flowName: this.props.flowName,
       stepNo: this.props.stepNo,
       content: table.outerHTML,
@@ -425,6 +426,8 @@ class Editor extends Component {
     let secondRow = startrow1 + 1;
     if (this.state.condition1 && startrow1 !== endrow1) {
       endrow1 = secondRow;
+    } else if (this.state.condition3 && startrow1 !== endrow1) {
+      endrow1 = startrow1;
     }
     value = "";
     value1 = "";
@@ -511,27 +514,77 @@ class Editor extends Component {
 
   mouseUp = (e) => {
     let parent = e.target.parentElement.parentElement;
-    let result = {
-      text: value,
-      value: value1,
-      index: [
-        this.state.startRow,
-        this.state.startCell,
-        this.state.endRow,
-        this.state.endCell,
-      ],
-    };
-    console.log("result", result);
-    this.setState({ result: [...this.state.result, result] }, () => {
-      this.changeMarkColor();
+    let result = {};
+    Axios.get("http://localhost:5001/get/flows/editorContent/id", {
+      params: {
+        editorId: this.props.id,
+      },
+    }).then((res) => {
+      console.log("res after eid", res.data);
+      let parseVar;
+      let len1 = res.data[0].result.length;
+      if (len1 === 0) {
+        parseVar = "parseoutput1";
+        console.log(parseVar);
+      } else {
+        let lastVal = res.data[0].result[len1 - 1].outputVar;
+        let nextVal = lastVal.substring(11);
+        console.log("nextVal", nextVal);
+        let addVariable = parseInt(nextVal) + 1;
+        parseVar = "parseoutput" + addVariable;
+      }
+      if (this.state.condition1 || this.state.condition2) {
+        result = {
+          condition: "Mark Text",
+          text: value,
+          value: value1,
+          index: [
+            this.state.startRow,
+            this.state.startCell,
+            this.state.endRow,
+            this.state.endCell,
+          ],
+        };
+      } else if (this.state.condition3) {
+        var mytable = document.getElementById("ta");
+        var myrows = mytable.getElementsByTagName("tr");
+        var selrow = myrows[this.state.startRow];
+        console.log("end cell pos", this.state.endCell);
+        var mycells = selrow.getElementsByTagName("td");
+        var len = mycells.length - 1;
+        console.log("length", len);
+        var endCellValue = mycells[this.state.endCell].innerText;
+        console.log("value", endCellValue);
+        let cellType = "NOT EOL";
+        if (this.state.endCell === len) {
+          cellType = "EOL";
+        }
+        console.log(this.state.editorId);
+
+        result = {
+          condition: "Mark Position",
+          startPos: this.state.startCell,
+          endPos: this.state.endCell,
+          lineNo: this.state.startRow,
+          endCellType: cellType,
+          endChar: endCellValue,
+          outputVar: parseVar,
+        };
+      }
+
+      console.log("result", result);
+      this.setState({ result: [...this.state.result, result] }, () => {
+        this.changeMarkColor();
+      });
+      let request = {
+        editorId: this.props.id,
+        content: this.state.content,
+        result: result,
+      };
+      Axios.put("http://localhost:5001/update/flows/editorContent", {
+        data: request,
+      }).then((res) => console.log(res));
     });
-    let request = {
-      content: this.state.content,
-      result: result,
-    };
-    Axios.put("http://localhost:5001/update/flows/editorContent", {
-      data: request,
-    }).then((res) => console.log(res));
     parent.onmousemove = null;
     parent.onmouseup = null;
   };
@@ -540,15 +593,27 @@ class Editor extends Component {
     console.log("state result", this.state.result);
     let array = [...this.state.result];
     array.map((value) => {
-      let startrow = parseInt(value.index[0]);
-      let endrow = parseInt(value.index[2]);
-      for (startrow; startrow <= endrow; startrow++) {
-        let startcell = parseInt(value.index[1]);
-        let endcell = parseInt(value.index[3]);
+      console.log("value now", value);
+      if (value.condition === "Mark Text") {
+        let startrow = parseInt(value.index[0]);
+        let endrow = parseInt(value.index[2]);
+        for (startrow; startrow <= endrow; startrow++) {
+          let startcell = parseInt(value.index[1]);
+          let endcell = parseInt(value.index[3]);
+          for (startcell; startcell <= endcell; startcell++) {
+            document.getElementById("ta").rows[startrow].cells[
+              startcell
+            ].style.color = "red";
+          }
+        }
+      } else if (value.condition === "Mark Position") {
+        let startcell = parseInt(value.startPos);
+        let endcell = parseInt(value.endPos);
+        let row = parseInt(value.lineNo);
         for (startcell; startcell <= endcell; startcell++) {
-          document.getElementById("ta").rows[startrow].cells[
-            startcell
-          ].style.color = "red";
+          console.log(document.getElementById("ta"));
+          document.getElementById("ta").rows[row].cells[startcell].style.color =
+            "red";
         }
       }
     });
@@ -597,6 +662,12 @@ class Editor extends Component {
           ></div>
         </div>
         <div className="sideedit">
+          <button
+            className="btn btn-sm btn-outline-secondary m-2 closebutton"
+            onClick={this.props.handleClose}
+          >
+            ×
+          </button>
           {this.state.result.map((res, index) => {
             return (
               // <p key={index}>
@@ -609,17 +680,43 @@ class Editor extends Component {
                 //className="table-bordered"
                 //style={{ margin: 5, padding: 5, border: "1px solid" }}
               >
-                <p>
-                  <span>Text to look for : &nbsp;</span>
-                  <span>{res.text}</span>
-                  <br />
-                  <span>value : &nbsp;</span>
-                  <span>{res.value}</span>
-                </p>
+                {res.condition === "Mark Text" ? (
+                  <p>
+                    <span>Text to look for : &nbsp;</span>
+                    <span>{res.text}</span>
+                    <br />
+                    <span>value : &nbsp;</span>
+                    <span>{res.value}</span>
+                  </p>
+                ) : null}
+                {res.condition === "Mark Position" ? (
+                  <p>
+                    <span>Start Position : &nbsp;</span>
+                    <span>{res.startPos}</span>
+                    <br />
+                    <span>End Position : &nbsp;</span>
+                    {res.endCellType === "EOL" ? (
+                      <span>{res.endCellType}</span>
+                    ) : (
+                      <span>{res.endPos}</span>
+                    )}
+                    <br />
+                    {res.endChar === ";" || res.endChar === "," ? (
+                      <span>
+                        End Char : &nbsp; {res.endChar} <br />
+                      </span>
+                    ) : null}
+                    <span>Line No : &nbsp;</span>
+                    <span>{parseInt(res.lineNo) + 1}</span>
+                    <br />
+                    <span>variable:&nbsp;{res.outputVar}</span>
+                  </p>
+                ) : null}
               </div>
             );
           })}
         </div>
+
         <div className="footer"></div>
       </div>
     );

@@ -24,6 +24,7 @@ class Flow extends Component {
     DupName: "",
     step: "",
     pathInfo: [],
+    //deleteStep: false,
 
     options: [
       {
@@ -114,8 +115,12 @@ class Flow extends Component {
 
   onButtonClick = (flow) => {
     console.log("button click", flow);
+    console.log("button");
+    //this.setState({ deleteStep: false });
+    this.refreshFlowList();
     axios.get("http://localhost:5001/get/flows/pathInfo").then((res) => {
       console.log("path info", res.data);
+
       this.setState({ pathInfo: res.data }, () => {
         this.setState({ selectedFlow: flow });
       });
@@ -244,6 +249,10 @@ class Flow extends Component {
     });
   };
 
+  onDelStep = (value) => {
+    this.setState({ deleteStep: value });
+  };
+
   render() {
     //console.log("this.state.flowList", this.state.flowList);
     //console.log("new changes");
@@ -329,6 +338,8 @@ class Flow extends Component {
                 pathInfo={this.state.pathInfo}
                 refreshPath={this.refreshPathInfo}
                 rerender={(name) => this.onButtonClick(name)}
+                //deleteStep={this.state.deleteStep}
+                //ondeleteStep={this.onDelStep}
               />
             ) : null}
             {this.state.addDialog ? (

@@ -235,6 +235,7 @@ code {
   margin-top: 2px;
   padding: 0px;
   font-size: 12px;
+  user-select: none;
   /* overflow-wrap: break-word; */
 }
 .stepitembox {
@@ -246,8 +247,9 @@ code {
   background-color: gray;
   display: inline-block;
   margin-top: 2px;
-  /* overflow-wrap: break-word; */
-
+  user-select: none;
+  overflow-wrap: break-word;
+  /* overflow: hidden; */
   /* padding: 0px;  */
 }
 
@@ -376,6 +378,12 @@ path:hover {
   position: absolute;
   overflow: auto;
   margin: 0 auto;
+}
+
+.closebutton {
+  position: absolute;
+  top: 0;
+  right: 25px;
 }
 .backdrop {
   width: 200%;

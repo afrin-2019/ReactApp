@@ -2,8 +2,10 @@ import React, { Component } from "react";
 import ActionTabContent from "./ActionTabContent";
 import LinkTabContent from "./LinkTabContent";
 import Axios from "axios";
+
 let i = 1;
-let linkKey;
+let linkKey = 0;
+let actionKey = 0;
 //let enable = false;
 class StepDetails1 extends Component {
   state = {
@@ -18,6 +20,7 @@ class StepDetails1 extends Component {
   componentDidMount() {
     document.getElementById("defaultOpen").click();
     console.log("step detail mount");
+    let isContent = false;
     ///this.refresh();
     //this.setContent();
     Axios.get("http://localhost:5001/get/flows/flowContent").then((res) => {
@@ -28,17 +31,47 @@ class StepDetails1 extends Component {
         if (content.Flow === this.props.flowSelected) {
           if (content.Step === this.props.selectedStep) {
             if (content.Link.length !== 0) {
+              this.setState({ disableLink: false });
               content.Link.map((link, index) => {
                 linkKey = index + 1;
+                isContent = true;
                 this.addLink(index, link);
+              });
+            } else {
+              linkKey = 0;
+              let j = -1;
+              isContent = true;
+              this.setState({
+                link_content: [
+                  ...this.state.link_content,
+                  <LinkTabContent
+                    ind={j}
+                    key={linkKey}
+                    id={linkKey}
+                    flowList={this.props.handleFlowList}
+                    flowSelected={this.props.flowSelected}
+                    linkContent={this.onLinkContent}
+                    handleDelete={this.deleteLink}
+                    stepNo={this.props.selectedStep}
+                    enableAddLink={() => this.enableLinkButton()}
+                    attachFlow={(condition, value) =>
+                      this.attachFlow(condition, value)
+                    }
+                    handleEdit={this.editLink}
+                    rerender={this.props.rerender}
+                  />,
+                ],
               });
             }
           }
-        } else {
-          linkKey = 0;
         }
       });
-      this.setContent();
+      if (!isContent) {
+        this.onLinkContent();
+      }
+      //this.addReceiveVariable();
+      this.addAction();
+      //this.setContent();
     });
   }
 
@@ -55,7 +88,7 @@ class StepDetails1 extends Component {
         content: [
           ...this.state.content,
           <ActionTabContent
-            key={this.state.btnId}
+            key={actionKey}
             enableAdd={() => this.enableButton()}
             handleDelete={this.deleteAction}
             id={this.state.btnId}
@@ -77,6 +110,7 @@ class StepDetails1 extends Component {
           ind={j}
           // key={1}
           // id={1}
+
           key={linkKey}
           id={linkKey}
           flowList={this.props.handleFlowList}
@@ -86,9 +120,200 @@ class StepDetails1 extends Component {
           stepNo={this.props.selectedStep}
           enableAddLink={() => this.enableLinkButton()}
           attachFlow={(condition, value) => this.attachFlow(condition, value)}
+          rerender={this.props.rerender}
+          handleEdit={this.editLink}
         />,
       ],
     });
+  };
+
+  addReceiveVariable = () => {
+    console.log("in add variable");
+    Axios.get("http://localhost:5001/get/receivevariable").then((res) => {
+      res.data.map((val) => {
+        if (val.flowName === this.props.flowSelected) {
+          val.variable.map((variable) => {
+            actionKey++;
+            this.setState({
+              content: [
+                ...this.state.content,
+                <ActionTabContent
+                  val={variable}
+                  key={actionKey}
+                  selectedAction={"5"}
+                  id={actionKey}
+                  handleDelete={this.deleteAction}
+                  flowList={this.props.handleFlowList}
+                  flowSelected={this.props.flowSelected}
+                  stepNo={this.props.selectedStep}
+                  enableAdd={() => this.enableButton()}
+                />,
+              ],
+            });
+          });
+        }
+      });
+      this.addAction();
+    });
+  };
+
+  addAction = () => {
+    let action, val, file;
+    let isContent = false;
+    this.state.flowContent.map((content) => {
+      if (content.Flow === this.props.flowSelected) {
+        if (content.Step === this.props.selectedStep) {
+          if (content.Action.length !== 0) {
+            let i = 0,
+              j = 0;
+            this.setState({ disabled: false });
+            content.Action.map((action1, index) => {
+              //actionKey = index + 1;
+              actionKey++;
+              isContent = true;
+              if (action1.Type === "Find NodeDetails") {
+                action = "1";
+                this.setState({
+                  content: [
+                    ...this.state.content,
+                    <ActionTabContent
+                      key={actionKey}
+                      nId={action1.id}
+                      selectedAction={action}
+                      id={actionKey}
+                      enableAdd={() => this.enableButton()}
+                      handleDelete={this.deleteAction}
+                      flowList={this.props.handleFlowList}
+                      flowSelected={this.props.flowSelected}
+                      stepNo={this.props.selectedStep}
+                    />,
+                  ],
+                });
+              } else if (action1.Type === "Connect") {
+                action = "2";
+
+                this.setState({
+                  content: [
+                    ...this.state.content,
+                    <ActionTabContent
+                      key={actionKey}
+                      conId={action1.id}
+                      selectedAction={action}
+                      id={actionKey}
+                      enableAdd={() => this.enableButton()}
+                      handleDelete={this.deleteAction}
+                      flowList={this.props.handleFlowList}
+                      flowSelected={this.props.flowSelected}
+                      stepNo={this.props.selectedStep}
+                    />,
+                  ],
+                });
+              } else if (action1.Type === "Run a Command") {
+                action = "3";
+                val = action1.Command;
+                ++j;
+                this.setState({
+                  content: [
+                    ...this.state.content,
+                    <ActionTabContent
+                      //cId={j}
+                      cId={action1.id}
+                      val={val}
+                      key={actionKey}
+                      selectedAction={action}
+                      id={actionKey}
+                      handleDelete={this.deleteAction}
+                      flowList={this.props.handleFlowList}
+                      flowSelected={this.props.flowSelected}
+                      stepNo={this.props.selectedStep}
+                      enableAdd={() => this.enableButton()}
+                    />,
+                  ],
+                });
+              } else if (action1.Type === "Parse the Output") {
+                action = "4";
+                file = action1.File;
+                console.log("in parse", ++i);
+                this.setState({
+                  content: [
+                    ...this.state.content,
+                    <ActionTabContent
+                      //edId={i}
+                      eId={action1.id}
+                      editorId={action1.id}
+                      file={file}
+                      key={actionKey}
+                      selectedAction={action}
+                      id={actionKey}
+                      handleDelete={this.deleteAction}
+                      flowList={this.props.handleFlowList}
+                      flowSelected={this.props.flowSelected}
+                      stepNo={this.props.selectedStep}
+                      enableAdd={() => this.enableButton()}
+                    />,
+                  ],
+                });
+              } else if (action1.Type === "Receive Variable") {
+                this.setState({
+                  content: [
+                    ...this.state.content,
+                    <ActionTabContent
+                      rvId={action1.id}
+                      val={action1.variable}
+                      key={actionKey}
+                      selectedAction={"5"}
+                      id={actionKey}
+                      handleDelete={this.deleteAction}
+                      flowList={this.props.handleFlowList}
+                      flowSelected={this.props.flowSelected}
+                      stepNo={this.props.selectedStep}
+                      enableAdd={() => this.enableButton()}
+                    />,
+                  ],
+                });
+              } else if (action1.Type === "Add Text Message") {
+                this.setState({
+                  content: [
+                    ...this.state.content,
+                    <ActionTabContent
+                      mId={action1.id}
+                      message={action1.message}
+                      key={actionKey}
+                      selectedAction={"6"}
+                      id={actionKey}
+                      handleDelete={this.deleteAction}
+                      flowList={this.props.handleFlowList}
+                      flowSelected={this.props.flowSelected}
+                      stepNo={this.props.selectedStep}
+                      enableAdd={() => this.enableButton()}
+                    />,
+                  ],
+                });
+              }
+            });
+          } else {
+            isContent = true;
+            this.setState({
+              content: [
+                ...this.state.content,
+                <ActionTabContent
+                  key={actionKey}
+                  enableAdd={() => this.enableButton()}
+                  handleDelete={this.deleteAction}
+                  id={this.state.btnId}
+                  flowList={this.props.handleFlowList}
+                  flowSelected={this.props.flowSelected}
+                  stepNo={this.props.selectedStep}
+                />,
+              ],
+            });
+          }
+        }
+      }
+    });
+    if (!isContent) {
+      this.addContent();
+    }
   };
 
   openCity = (evt, name) => {
@@ -114,12 +339,13 @@ class StepDetails1 extends Component {
 
   addContent = () => {
     this.setState({ disabled: true });
+    actionKey++;
     this.setState({ btnId: this.state.btnId + 1 }, () =>
       this.setState({
         content: [
           ...this.state.content,
           <ActionTabContent
-            key={this.state.btnId}
+            key={actionKey}
             id={this.state.btnId}
             //enable={this.enableButton}
             handleDelete={this.deleteAction}
@@ -163,6 +389,8 @@ class StepDetails1 extends Component {
           stepNo={this.props.selectedStep}
           enableAddLink={() => this.enableLinkButton()}
           attachFlow={(condition, value) => this.attachFlow(condition, value)}
+          handleEdit={this.editLink}
+          rerender={this.props.rerender}
         />,
       ],
     });
@@ -188,14 +416,16 @@ class StepDetails1 extends Component {
           selectValue={link.NextStep.name}
           enableAddLink={() => this.enableLinkButton()}
           attachFlow={(condition, value) => this.attachFlow(condition, value)}
+          handleEdit={this.editLink}
+          rerender={this.props.rerender}
         />,
       ],
     });
   };
 
-  deleteAction = (id, action, value) => {
+  deleteAction = (id, action, uId) => {
     //console.log("delete", this.state.content);
-
+    console.log("uid type in delete action", typeof uId);
     let contentArray = Object.assign([], this.state.content);
     console.log("contentArray", contentArray);
     contentArray.map((content, index) => {
@@ -208,35 +438,76 @@ class StepDetails1 extends Component {
       }
     });
     let request = {};
-    if (action === "3") {
-      request = {
-        flowname: this.props.flowSelected,
-        stepNo: this.props.selectedStep,
-        Type: "Run a Command",
-        Command: value,
-      };
-      Axios.delete("http://localhost:5001/delete/flow/action", {
-        data: request,
-      }).then((res) => {
-        console.log("res", res);
-        this.refresh();
-        //this.setContent();
-      });
+    let type;
+    if (action === "1") {
+      type = "Find NodeDetails";
+    } else if (action === "2") {
+      type = "Connect";
+    } else if (action === "3") {
+      type = "Run a Command";
     } else if (action === "4") {
-      request = {
-        flowname: this.props.flowSelected,
-        stepNo: this.props.selectedStep,
-        Type: "Parse the Output",
-        File: value,
-      };
-      Axios.delete("http://localhost:5001/delete/flow/action", {
-        data: request,
-      }).then((res) => {
-        console.log("res", res);
-        this.refresh();
-        //this.setContent();
-      });
+      type = "Parse the Output";
+    } else if (action === "5") {
+      type = "Receive Variable";
+    } else if (action === "6") {
+      type = "Add Text Message";
     }
+    request = {
+      flowname: this.props.flowSelected,
+      stepNo: this.props.selectedStep,
+      Type: type,
+      id: uId,
+    };
+    console.log("del req", request);
+    Axios.delete("http://localhost:5001/delete/flow/action", {
+      data: request,
+    }).then((res) => {
+      console.log("res", res);
+      this.refresh();
+    });
+    let req1 = {
+      flowName: this.props.flowSelected,
+      id: this.props.selectedStep + "-" + uId,
+    };
+
+    // Axios.delete("http://localhost:5001/delete/receivevariable", {
+    //   data: req1,
+    // }).then((res) => console.log(res));
+  };
+
+  editLink = (id, condition, path, nextstep, oldcondition) => {
+    let contentArray = Object.assign([], this.state.link_content);
+    contentArray.map((content, index) => {
+      console.log("props", content.props.id);
+      console.log("id", id);
+      if (content.props.id === id) {
+        console.log("condition", condition);
+        contentArray.splice(
+          index,
+          1,
+          <LinkTabContent
+            ind={index}
+            key={index}
+            id={index}
+            flowList={this.props.handleFlowList}
+            flowSelected={this.props.flowSelected}
+            linkContent={this.onLinkContent}
+            handleDelete={this.deleteLink}
+            stepNo={this.props.selectedStep}
+            condition={condition}
+            path={path}
+            selectValue={nextstep}
+            enableAddLink={() => this.enableLinkButton()}
+            attachFlow={(condition, value) => this.attachFlow(condition, value)}
+            handleEdit={this.editLink}
+            rerender={this.props.rerender}
+          />
+        );
+        console.log(contentArray);
+        this.setState({ link_content: contentArray });
+        this.props.editFlow(condition, oldcondition);
+      }
+    });
   };
 
   deleteLink = (id, condition, step) => {
@@ -286,7 +557,7 @@ class StepDetails1 extends Component {
     this.props.attachFlow(condition, value);
   };
   render() {
-    // console.log("content", this.state.content);
+    console.log("render stepdetails");
     // console.log("flow content", this.state.flowContent);
     // console.log("prop in step detail", this.props);
     let action, val, file;
@@ -335,10 +606,12 @@ class StepDetails1 extends Component {
                 <i className="fa fa-plus" style={{ margin: 1 }}></i>
               </button>
             </div>
-            {this.state.flowContent.map((content) => {
+            {/* {this.state.flowContent.map((content) => {
               if (content.Flow === this.props.flowSelected) {
                 if (content.Step === this.props.selectedStep) {
                   if (content.Action.length !== 0) {
+                    let i = 0,
+                      j = 0;
                     return content.Action.map((action1, index) => {
                       if (
                         action1.Type === "Find NodeDetails" ||
@@ -346,12 +619,26 @@ class StepDetails1 extends Component {
                       ) {
                         if (action1.Type === "Find NodeDetails") {
                           action = "1";
+                          return (
+                            <ActionTabContent
+                              key={index}
+                              nId={action1.id}
+                              selectedAction={action}
+                              id={index}
+                              enableAdd={() => this.enableButton()}
+                              handleDelete={this.deleteAction}
+                              flowList={this.props.handleFlowList}
+                              flowSelected={this.props.flowSelected}
+                              stepNo={this.props.selectedStep}
+                            />
+                          );
                         } else {
                           action = "2";
                         }
                         return (
                           <ActionTabContent
                             key={index}
+                            conId={action1.id}
                             selectedAction={action}
                             id={index}
                             enableAdd={() => this.enableButton()}
@@ -364,27 +651,34 @@ class StepDetails1 extends Component {
                       } else if (action1.Type === "Run a Command") {
                         action = "3";
                         val = action1.Command;
+                        ++j;
                         return (
                           <ActionTabContent
+                            //cId={j}
+                            cId={action1.id}
+                            val={val}
                             key={index}
                             selectedAction={action}
-                            val={val}
                             id={index}
-                            enableAdd={() => this.enableButton()}
                             handleDelete={this.deleteAction}
                             flowList={this.props.handleFlowList}
                             flowSelected={this.props.flowSelected}
                             stepNo={this.props.selectedStep}
+                            enableAdd={() => this.enableButton()}
                           />
                         );
                       } else if (action1.Type === "Parse the Output") {
                         action = "4";
                         file = action1.File;
+                        console.log("in parse", ++i);
                         return (
                           <ActionTabContent
+                            //edId={i}
+                            eId={action1.id}
+                            editorId={action1.id}
+                            file={file}
                             key={index}
                             selectedAction={action}
-                            file={file}
                             id={index}
                             handleDelete={this.deleteAction}
                             flowList={this.props.handleFlowList}
@@ -402,7 +696,7 @@ class StepDetails1 extends Component {
                   }
                 }
               }
-            })}
+            })} */}
             {this.state.content}
           </div>
 
@@ -423,38 +717,7 @@ class StepDetails1 extends Component {
                 <i className="fa fa-plus" style={{ margin: 1 }}></i>
               </button>
             </div>
-            {/* {this.state.flowContent.map((content) => {
-              console.log("content", content + ", ", this.props.flowSelected);
-              if (content.Flow === this.props.flowSelected) {
-                if (content.Step === this.props.selectedStep) {
-                  if (content.Link.length !== 0) {
-                    return content.Link.map((link, index) => {
-                      //console.log("link", link, "index", index);
-                      this.addLink(index, link);
-                      // return (
-                      //   <LinkTabContent
-                      //     ind={index}
-                      //     key={index}
-                      //     id={index}
-                      //     flowList={this.props.handleFlowList}
-                      //     flowSelected={this.props.flowSelected}
-                      //     linkContent={this.onLinkContent}
-                      //     handleDelete={this.deleteLink}
-                      //     stepNo={this.props.selectedStep}
-                      //     condition={link.Condition}
-                      //     path={link.NextStep.path}
-                      //     selectValue={link.NextStep.name}
-                      //     enableAddLink={() => this.enableLinkButton()}
-                      //     attachFlow={(condition, value) =>
-                      //       this.attachFlow(condition, value)
-                      //     }
-                      //   />
-                      // );
-                    });
-                  }
-                }
-              }
-            })} */}
+
             {this.state.link_content}
           </div>
         </div>

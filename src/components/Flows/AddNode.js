@@ -18,6 +18,8 @@ let pathid,
   sp1,
   drawline,
   parentTarget,
+  startStep,
+  condition,
   newPathId = 10;
 
 class AddNode extends Component {
@@ -37,15 +39,22 @@ class AddNode extends Component {
       lineStart: false,
       i: 0,
       j: 0,
+      isPath: false,
+      reqObj: [],
+      reqObj1: [],
     };
     this.reff = React.createRef();
   }
   componentDidMount() {
+    //console.log("in add node mount");
     this.pos1 = 0;
     this.pos2 = 0;
     this.pos3 = 0;
     this.pos4 = 0;
-    //this.newPathId = 10;
+    this.refreshAddNode();
+  }
+  refreshAddNode = () => {
+    //console.log("in refresh add node", this.props.stepName);
     axios.get("http://localhost:5001/get/flows/flowContent").then((res) => {
       this.setState({ flowContent: res.data });
       res.data.map((content) => {
@@ -53,10 +62,10 @@ class AddNode extends Component {
           if (content.Step === this.props.stepName) {
             content.Link.map((link, index) => {
               this.attachFlow(link.Condition, link.NextStep.path);
-              console.log("flowlist in attach flow", this.props.flowList);
+              //console.log("flowlist in attach flow", this.props.flowList);
               this.props.flowList.map((flow) => {
                 if (flow.name === this.props.flowName) {
-                  console.log("flow", flow.steps);
+                  //console.log("flow", flow.steps);
                 }
               });
             });
@@ -77,6 +86,7 @@ class AddNode extends Component {
               p.hidden = "true";
               p.innerHTML = path.pathname;
               p.key = index;
+              p.id = "P-" + path.pathid;
               let doc = document.getElementById("item" + this.props.index);
               doc.appendChild(p);
             }
@@ -90,10 +100,10 @@ class AddNode extends Component {
         newPathId = newPathId[0].slice(-2);
 
         newPathId = parseInt(newPathId) + 1;
-        console.log("newpathId", newPathId);
+        //console.log("newpathId", newPathId);
       }
     });
-  }
+  };
 
   dragMouseDown = (e) => {
     e.preventDefault();
@@ -125,11 +135,11 @@ class AddNode extends Component {
     a = dragitem.getElementsByTagName("p");
 
     //console.log("a", a);
-
+    let reqArray = [];
     for (let it = 0; it < a.length; it++) {
-      console.log(a[it].innerHTML);
+      //console.log(a[it].innerHTML);
       let newId = a[it].innerHTML.split("-");
-      console.log("newId", newId);
+      // console.log("newId", newId);
       b = document.getElementById(newId[0]);
       sp = b.getAttribute("d").split(" ");
       //console.log("sp", sp);
@@ -141,34 +151,30 @@ class AddNode extends Component {
         dragitem.offsetLeft +
         " " +
         (dragitem.offsetTop - 10);
-      //console.log("new d", d);
+      //console.log("p change", d);
       b.setAttribute("d", d);
       let req = {
         flowName: this.props.flowName,
         path: d,
         pathname: a[it].innerHTML,
       };
-      axios
-        .put("http://localhost:5001/update/flows/pathInfo", { data: req })
-        .then((res) => console.log(res));
+      reqArray.push(req);
+      this.setState({ isPath: true });
+      this.setState({ reqObj: reqArray });
+      // axios
+      //   .put("http://localhost:5001/update/flows/pathInfo", { data: req })
+      //   .then((res) => console.log(res));
     }
     sp = dragitem.getElementsByTagName("span");
     //console.log("sp", sp);
+    let reqArray1 = [];
     for (let it = 0; it < sp.length; it++) {
-      console.log(sp[it].innerHTML);
+      //console.log(sp[it].innerHTML);
       let newId = sp[it].innerHTML.split("-");
-      console.log("newId span", newId);
+      //console.log("newId span", newId);
       b = document.getElementById(newId[0]);
-      console.log("b", b);
+      //console.log("b", b);
       sp1 = b.getAttribute("d").split(" ");
-
-      //idofitembox1 = dragitem.id.substring(7, 9);
-      //console.log(idofitembox1);
-      // console.log(
-      //   "parent id",
-      //   document.getElementById(e.target.parentElement.id)
-      // );
-      //console.log("targetid", targetid.offsetTop);
       startpositionleft =
         document.getElementById(e.target.parentElement.id).offsetLeft + 100;
       startpositiontop =
@@ -192,16 +198,46 @@ class AddNode extends Component {
         path: d,
         pathname: sp[it].innerHTML,
       };
-      axios
-        .put("http://localhost:5001/update/flows/pathInfo", { data: req })
-        .then((res) => {
-          console.log(res);
-          //b.setAttribute("d", d);
-        });
+      this.setState({ isPath: true });
+      reqArray1.push(req);
+      this.setState({ reqObj1: reqArray1 });
+      // axios
+      //   .put("http://localhost:5001/update/flows/pathInfo", { data: req })
+      //   .then((res) => {
+      //     console.log(res);
+      //     //b.setAttribute("d", d);
+      //   });
     }
   };
   closeDragElement = (e) => {
     console.log("mouse up ", this.state.lineStart);
+    if (this.state.isPath) {
+      console.log("reqobj", this.state.reqObj);
+      if (this.state.reqObj.length !== 0) {
+        this.state.reqObj.map((reqObj) => {
+          axios
+            .put("http://localhost:5001/update/flows/pathInfo", {
+              data: reqObj,
+            })
+            .then((res) => {
+              console.log("update only once", res);
+              this.setState({ isPath: false });
+            });
+        });
+      }
+      if (this.state.reqObj1.length !== 0) {
+        this.state.reqObj1.map((reqObj) => {
+          axios
+            .put("http://localhost:5001/update/flows/pathInfo", {
+              data: reqObj,
+            })
+            .then((res) => {
+              console.log("update only once", res);
+              this.setState({ isPath: false });
+            });
+        });
+      }
+    }
     let request = {
       flowName: this.props.flowName,
       step: this.props.stepName,
@@ -210,7 +246,9 @@ class AddNode extends Component {
       newAxis1: [this.state.x1, this.state.y1],
     };
     axios
-      .put("http://localhost:5001/update/flows/steps/axis", { data: request })
+      .put("http://localhost:5001/update/flows/steps/axis", {
+        data: request,
+      })
       .then((response) => {
         console.log(response);
         this.props.refresh();
@@ -221,6 +259,7 @@ class AddNode extends Component {
       this.endLine(e);
     }
     this.props.refreshPath();
+    this.props.canvasRefresh();
 
     document.onmouseup = null;
     document.onmousemove = null;
@@ -229,7 +268,8 @@ class AddNode extends Component {
   doubleClick = () => {
     console.log("double click");
     //this.props.handleNodeClick(this.props.stepName);
-
+    console.log(this.props.isOpen);
+    this.props.handlePropertyBar();
     this.setState({ openSideBar: true });
   };
 
@@ -238,6 +278,7 @@ class AddNode extends Component {
   };
 
   onCloseBar = () => {
+    this.props.handlePropertyBar();
     this.setState({ openSideBar: false });
   };
 
@@ -256,6 +297,7 @@ class AddNode extends Component {
             className="itembox"
             id={"itembox" + this.state.j}
             key={this.state.i}
+            style={{ userSelect: "none" }}
             //onMouseUp={this.endLine}
           >
             {condition}
@@ -273,6 +315,7 @@ class AddNode extends Component {
                 className="stepitembox"
                 id={"stepitembox" + this.state.j}
                 //onMouseUp={this.endLine}
+                style={{ userSelect: "none" }}
               >
                 {condition}
               </div>
@@ -290,7 +333,7 @@ class AddNode extends Component {
 
                   if (pathid[1] === spanId) {
                     return (
-                      <span key={index} hidden>
+                      <span key={index} hidden id={"Span-" + pathid[0]}>
                         {path.pathname}
                       </span>
                     );
@@ -321,7 +364,6 @@ class AddNode extends Component {
     // newPathId = newPathId[0].slice(-2);
     // console.log("newpathid", newPathId);
     // newPathId=parseInt(newPathId)
-    console.log("pathid when line starts", newPathId);
     this.setState({ lineStart: true });
     drawline = true;
     //let svg = document.getElementById("svg");
@@ -352,8 +394,10 @@ class AddNode extends Component {
     //canvas.appendChild(svg);
     console.log("event", event.target.id);
     targetid = document.getElementById(event.target.id);
+    condition = targetid.parentElement.childNodes[0].innerHTML;
     parentTarget = document.getElementById("item" + this.props.index);
     newPathId += 1;
+    startStep = this.props.stepName;
     canvas.onmousemove = this.drawLine;
     canvas.onmouseup = this.endLine;
     // })
@@ -406,28 +450,48 @@ class AddNode extends Component {
       let pathname = lined.id + "-" + targetid.id;
       console.log("end d - ", d);
       lined.setAttribute("d", d);
+      //this.props.endLine(d, lined.id);
       this.hiddenel = document.createElement("p");
       this.hiddenel.hidden = "true";
+      this.hiddenel.id = "P-" + lined.id;
       this.hiddenel.innerHTML = pathname;
       this.endid.appendChild(this.hiddenel);
       this.hiddenspan = document.createElement("span");
       this.hiddenspan.hidden = "true";
       this.hiddenspan.innerHTML = pathname;
+      this.hiddenspan.id = "Span-" + lined.id;
       console.log("exact", targetid.parentElement.parentElement);
       console.log(parentTarget.children);
       targetid.parentElement.appendChild(this.hiddenspan);
+      console.log(
+        "start step is",
+        startStep + " end step is" + this.props.stepName
+      );
       let req = {
         flowName: this.props.flowName,
         pathid: lined.id,
         path: d,
         pathname: pathname,
+        startStep: startStep,
         endStep: this.props.stepName,
+        condition: condition,
       };
       axios
         .post("http://localhost:5001/insert/flows/pathInfo", { data: req })
         .then((res) => {
           console.log(res);
-          this.props.endLine();
+          axios
+            .put("http://localhost:5001/update/flow/link", {
+              flowName: this.props.flowName,
+              stepno: startStep,
+              condition: condition,
+              nextstep: this.props.stepName,
+            })
+            .then((res) => {
+              console.log(res);
+              this.props.endLine();
+            });
+
           //this.props.refreshPath();
         });
     } else {
@@ -436,27 +500,212 @@ class AddNode extends Component {
       drawline = false;
       this.props.removePath();
     }
+
     drawline = false;
     canvas.onmouseup = null;
     canvas.onmousemove = null;
   };
 
-  deleteFlow = (req) => {
-    console.log("req del", req);
+  editFlow = (condition, oldcondition) => {
     console.log("div", this.state.addDiv);
-    this.state.addDiv.map((div, index) => {
-      console.log("child", div.props.children);
+    let editDiv = [...this.state.addDiv];
+    //let editDiv = Object.assign([], this.state.addDiv);
+    console.log("edited condition", condition, oldcondition);
+    editDiv.map((div, index) => {
       let child = div.props.children;
-      console.log(child.props.children[0].props.children);
-      if (req.condition === child.props.children[0].props.children) {
-        let divArray = [...this.state.addDiv];
-        divArray.splice(index, 1);
-        this.setState({ addDiv: divArray });
+      if (child.type === "div") {
+        console.log("condition = ", child.props.children[0].props.children);
+        if (child.props.children[0].props.children === oldcondition) {
+          console.log("div", div);
+          editDiv.splice(
+            index,
+            1,
+            <React.Fragment key={div.key}>
+              <div className="wrapItem" id={child.props.id}>
+                <div
+                  className="stepitembox"
+                  id={child.props.children[0].props.id}
+                  //onMouseUp={this.endLine}
+                  style={{ userSelect: "none" }}
+                >
+                  {condition}
+                </div>
+
+                <div
+                  className="sideitembox"
+                  id={child.props.children[1].props.id}
+                  onMouseDown={this.startLine}
+                ></div>
+                {this.props.pathInfo.map((path, index) => {
+                  if (path.flowname === this.props.flowName) {
+                    let pathid = path.pathname.split("-");
+                    let spanId = child.props.children[1].props.id;
+
+                    if (pathid[1] === spanId) {
+                      return (
+                        <span key={index} hidden id={"Span-" + pathid[0]}>
+                          {path.pathname}
+                        </span>
+                      );
+                    }
+                  }
+                })}
+              </div>
+            </React.Fragment>
+          );
+          this.setState({ addDiv: editDiv });
+        }
+      } else {
+        console.log("condition = ", child);
+        if (child === oldcondition) {
+          editDiv.splice(
+            index,
+            1,
+            <div
+              className="itembox"
+              id={div.props.id}
+              key={div.key}
+              style={{ userSelect: "none" }}
+              //onMouseUp={this.endLine}
+            >
+              {condition}
+            </div>
+          );
+          this.setState({ addDiv: editDiv });
+          console.log(this.state.addDiv);
+        }
       }
     });
   };
 
+  deleteFlow = (req) => {
+    console.log("req del", req);
+    console.log("div", this.state.addDiv);
+    let isDel = false;
+    this.state.addDiv.map((div, index) => {
+      // if (!isDel) {
+      let child = div.props.children;
+      console.log("child", child);
+      if (child.type === "div") {
+        //    if (!req.step) {
+        console.log("child", div.props.children);
+        console.log(child.props.children[0].props.children);
+
+        if (req.condition === child.props.children[0].props.children) {
+          console.log("if condition satisfied");
+          console.log(child.props.children[0].props.children);
+          let sideItemId = child.props.children[1].props.id;
+          console.log("path to be deleted from ", sideItemId);
+          this.props.pathInfo.map((path) => {
+            let sideid = path.pathname.split("-");
+            if (sideItemId === sideid[1]) {
+              console.log("path id", sideid[0]);
+              let req1 = {
+                flowName: this.props.flowName,
+                pathid: sideid[0],
+              };
+              console.log("request when complete delete", req1);
+              isDel = true;
+              axios
+                .delete("http://localhost:5001/delete/flows/path", {
+                  data: req1,
+                })
+                .then((res) => {
+                  console.log(res);
+                  this.props.rerender(this.props.flowName);
+
+                  let ptag = document.getElementById("P-" + sideid[0]);
+                  if (ptag !== null) {
+                    ptag.remove();
+                  }
+                  let spantag = document.getElementById("Span-" + sideid[0]);
+                  if (spantag !== null) {
+                    spantag.remove();
+                  }
+                });
+            }
+          });
+
+          // if (req.condition === child.props.children[0].props.children) {
+          let divArray = [...this.state.addDiv];
+          divArray.splice(index, 1);
+          this.setState({ addDiv: divArray });
+        }
+        //   }
+      } else {
+        if (req.condition === child) {
+          let divArray = [...this.state.addDiv];
+          divArray.splice(index, 1);
+          this.setState({ addDiv: divArray });
+        }
+      }
+      //}
+    });
+  };
+
+  onDeleteStep = () => {
+    //document.getElementById("item" + this.props.index).remove();
+    let step = this.props.stepName;
+    console.log("in delete step");
+    console.log("this.props.stepName", this.props.stepName);
+    axios
+      .put("http://localhost:5001/delete/flows/steps", {
+        flowName: this.props.flowName,
+        step: this.props.stepName,
+      })
+      .then((res) => {
+        this.props.canvasRefresh();
+        let request = {
+          flowName: this.props.flowName,
+          step: this.props.stepName,
+        };
+        axios
+          .delete("http://localhost:5001/delete/flows/path/stepDelete", {
+            data: request,
+          })
+          .then((res) => {
+            console.log("after path delete", res);
+            this.props.rerender(this.props.flowName);
+            axios
+              .get("http://localhost:5001/get/flows/flowContent")
+              .then((res) => {
+                console.log("flowcontent", res.data);
+                res.data.map((flow) => {
+                  //console.log("flowcontent", this.state.flowContent);
+                  //this.state.flowContent.map((flow) => {
+                  console.log("flow", flow);
+                  console.log(this.props.flowName + "-" + step);
+                  console.log("this.props.stepName", this.props.stepName);
+                  if (flow.Flow === this.props.flowName) {
+                    console.log("true");
+                    if (flow.Step === step) {
+                      console.log("true");
+                      axios
+                        .delete("http://localhost:5001/delete/flowcontent", {
+                          data: request,
+                        })
+                        .then((res) => {
+                          console.log(res);
+
+                          //this.props.rerender(this.props.flowName);
+                          this.setState({ addDiv: [] });
+                          this.props.canvasRefresh();
+                          //this.props.refresh();
+                          //this.refreshAddNode();
+                          //this.props.refreshPath();
+                        });
+                    }
+                  }
+                });
+              });
+          });
+        // this.props.deleteItem("item" + this.props.index);
+      });
+  };
+
   render() {
+    //console.log("props in add node", this.props);
+    //console.log("state of add node", this.state);
     let i = this.props.index;
     return (
       <React.Fragment>
@@ -476,6 +725,7 @@ class AddNode extends Component {
             onDoubleClick={this.doubleClick}
             onMouseDown={this.dragMouseDown}
             onMouseUp={this.closeDragElement}
+            style={{ userSelect: "none" }}
           >
             {this.props.stepName}
           </div>
@@ -491,6 +741,20 @@ class AddNode extends Component {
               }
             }
           })} */}
+          {/* <button
+            style={{
+              // position: "absolute",
+              // top: 0,
+              // right: 0,
+              margin: 2,
+              fontSize: 10,
+              backgroundColor: "transparent",
+              border: "none",
+            }}
+            onClick={this.onDeleteStep}
+          >
+            <i className="fa fa-trash" />
+          </button> */}
         </div>
 
         {this.state.openSideBar ? (
@@ -503,6 +767,8 @@ class AddNode extends Component {
             disableAttach={() => this.disableAttach()}
             refresh={this.props.refresh}
             deleteFlow={(req) => this.deleteFlow(req)}
+            editFlow={this.editFlow}
+            rerender={(flowName) => this.props.rerender(flowName)}
           />
         ) : null}
       </React.Fragment>
