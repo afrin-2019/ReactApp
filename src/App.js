@@ -11,7 +11,7 @@ import ConnectivityNew from "./components/Connectivity/ConnectivityNew";
 import NewPanel from "./components/Connectivity/NewPanel";
 import Login from "./components/Login";
 import Dashboard from "./components/Dashboard";
-import Nodes from "./components/Nodes";
+import Nodes from "./components/Nodes/Nodes";
 import { AuthContext } from "./context/auth.js";
 import PrivateRoute from "./components/PrivateRoute";
 function App() {

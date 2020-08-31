@@ -29,12 +29,13 @@ passport.use(strategy);
 app.use(passport.initialize());
 
 var MongoClient = require("mongodb").MongoClient;
+// var url =
+//   "mongodb://DevApp1:DevWisdomCircle2019@52.14.168.40:27017/ReactDatabase";
 var url = "mongodb://localhost:27017/ReactDatabase";
-
 MongoClient.connect(url, function (err, db) {
   var dbo = db.db("ReactDatabase");
   if (err) throw err;
-  console.log("connected");
+  //console.log("connected");
 
   //insert list of flows into FlowListCollection
   app.post("/insert/flows/flowList", (req, res) => {
@@ -74,7 +75,7 @@ MongoClient.connect(url, function (err, db) {
   app.put("/insert/flows/steps", (req, res) => {
     var flowName = req.body.data.flowName;
     var step = req.body.data.step;
-    console.log(step);
+    //console.log(step);
     dbo
       .collection("FlowListCollection")
       .updateOne({ name: flowName }, { $push: { steps: step } }, function (
@@ -87,7 +88,7 @@ MongoClient.connect(url, function (err, db) {
   });
 
   app.put("/update/flows/steps/axis", (req, res) => {
-    console.log(req.body);
+    //console.log(req.body);
     var flowName = req.body.data.flowName;
     var step = req.body.data.step;
     var oldaxis = req.body.data.oldAxis;
@@ -124,7 +125,7 @@ MongoClient.connect(url, function (err, db) {
   });
 
   app.delete("/delete/flowcontent", (req, res) => {
-    console.log("del flow content", req.body);
+    //console.log("del flow content", req.body);
     dbo
       .collection("FlowContent")
       .deleteOne({ Flow: req.body.flowName, Step: req.body.step }, function (
@@ -138,7 +139,7 @@ MongoClient.connect(url, function (err, db) {
 
   //delete flowList from FlowListCollection
   app.delete("/delete/flows/flowList", (req, res) => {
-    console.log("req", req.body);
+    //console.log("req", req.body);
     var flowname = req.body.flowName;
 
     dbo
@@ -162,7 +163,7 @@ MongoClient.connect(url, function (err, db) {
 
   app.delete("/delete/flows/path", (req, res) => {
     var id = req.body.pathid;
-    console.log("id", id);
+    //console.log("id", id);
     dbo
       .collection("PathCollection")
       .deleteOne({ flowname: req.body.flowName, pathid: id }, function (
@@ -182,7 +183,7 @@ MongoClient.connect(url, function (err, db) {
         { flowname: req.body.flowName, endstep: req.body.step },
         function (err, res) {
           if (err) throw err;
-          //console.log(res);
+          ////console.log(res);
         }
       );
     dbo
@@ -204,7 +205,7 @@ MongoClient.connect(url, function (err, db) {
       .find({ name: flowName })
       .forEach(function (doc) {
         var newDoc = doc;
-        console.log("doc", newDoc);
+        //console.log("doc", newDoc);
         delete newDoc._id;
         newDoc.name = newFlow;
         dbo
@@ -219,7 +220,7 @@ MongoClient.connect(url, function (err, db) {
       .find({ Flow: flowName })
       .forEach(function (doc) {
         var newDoc = doc;
-        console.log("doc", newDoc);
+        //console.log("doc", newDoc);
         delete newDoc._id;
         newDoc.Flow = newFlow;
         dbo.collection("FlowContent").insertOne(newDoc, function (err, res) {
@@ -232,7 +233,7 @@ MongoClient.connect(url, function (err, db) {
       .find({ flowname: flowName })
       .forEach(function (doc) {
         var newDoc = doc;
-        console.log("doc", newDoc);
+        //console.log("doc", newDoc);
         delete newDoc._id;
         newDoc.flowname = newFlow;
         dbo.collection("PathCollection").insertOne(newDoc, function (err, res) {
@@ -268,7 +269,7 @@ MongoClient.connect(url, function (err, db) {
 
   // app.get("/get/flows/pathInfo", (req, res) => {
   //   var flowName = req.query.flowName;
-  //   console.log("path", flowName);
+  //   //console.log("path", flowName);
   //   dbo
   //     .collection("PathCollection")
   //     .find({ flowname: flowName })
@@ -303,12 +304,29 @@ MongoClient.connect(url, function (err, db) {
     var flowName = req.body.data.flowName;
     var path = req.body.data.path;
     var pathName = req.body.data.pathname;
-    console.log(req.body.data);
+    //console.log(req.body.data);
     dbo
       .collection("PathCollection")
       .updateOne(
         { flowname: flowName, pathname: pathName },
         { $set: { path: path } },
+        function (err, res) {
+          if (err) throw err;
+        }
+      );
+    res.send("path updated");
+  });
+
+  app.put("/update/flows/pathname", (req, res) => {
+    var flowName = req.body.data.flowName;
+    var pathName = req.body.data.pathname;
+    var newpathname = req.body.data.newpathname;
+    //console.log(req.body.data);
+    dbo
+      .collection("PathCollection")
+      .updateOne(
+        { flowname: flowName, pathname: pathName },
+        { $set: { pathname: newpathname, path: req.body.data.updatedPath } },
         function (err, res) {
           if (err) throw err;
         }
@@ -347,7 +365,7 @@ MongoClient.connect(url, function (err, db) {
   //get the editor content from db based on id
   app.get("/get/flows/editorContent/id", (req, res) => {
     var id = req.query.editorId;
-    console.log(id);
+    //console.log(id);
     dbo
       .collection("EditorContent")
       .find({ EditorId: id })
@@ -361,7 +379,7 @@ MongoClient.connect(url, function (err, db) {
   app.put("/update/flows/editorContent", (req, res) => {
     var result = req.body.data.result;
     var content = req.body.data.content;
-    console.log(req.body);
+    //console.log(req.body);
     dbo
       .collection("EditorContent")
       .updateOne(
@@ -372,6 +390,79 @@ MongoClient.connect(url, function (err, db) {
         }
       );
     res.send("result updated");
+  });
+  //update output variable
+  app.put("/update/flows/editorContent/result", (req, res) => {
+    var result = req.body.data.result;
+    var output = req.body.data.output;
+    //console.log(req.body);
+    dbo
+      .collection("EditorContent")
+      .updateOne(
+        { EditorId: req.body.data.editorId, result: result },
+        { $set: { "result.$.outputVar": output } },
+        function (err, res) {
+          if (err) throw err;
+        }
+      );
+    res.send("output variable updated");
+  });
+
+  //update alignment option
+  app.put("/update/flows/editorContent/alignment", (req, res) => {
+    var result = req.body.data.result;
+    var alignment = req.body.data.alignment;
+    //console.log(req.body);
+    dbo
+      .collection("EditorContent")
+      .updateOne(
+        { EditorId: req.body.data.editorId, result: result },
+        { $set: { "result.$.alignment": alignment } },
+        function (err, res) {
+          if (err) throw err;
+        }
+      );
+    res.send("alignment option updated");
+  });
+
+  //update endLineValue
+  app.put("/update/flows/editorContent/endLineValue", (req, res) => {
+    var result = req.body.data.result;
+    var value = req.body.data.value;
+    var endline = req.body.data.endLine;
+    dbo.collection("EditorContent").updateMany(
+      { EditorId: req.body.data.editorId, result: result },
+      {
+        $set: { "result.$.endLineValue": value, "result.$.endLine": endline },
+      },
+      function (err, res) {
+        if (err) throw err;
+      }
+    );
+    res.send("end line value updated");
+  });
+
+  //update filter value,delimiter and wordposition
+  app.put("/update/flows/editorContent/filterValue", (req, res) => {
+    var result = req.body.data.result;
+    var filterText = req.body.data.filterText;
+    var delimiter = req.body.data.delimiter;
+    var wordPosition = req.body.data.wordPosition;
+
+    dbo.collection("EditorContent").updateMany(
+      { EditorId: req.body.data.editorId, result: result },
+      {
+        $set: {
+          "result.$.filterText": filterText,
+          "result.$.delimiter": delimiter,
+          "result.$.wordPosition": wordPosition,
+        },
+      },
+      function (err, res) {
+        if (err) throw err;
+      }
+    );
+    res.send("filter text updated");
   });
 
   //delete editor content
@@ -386,6 +477,22 @@ MongoClient.connect(url, function (err, db) {
         }
       );
     res.send("editor deleted");
+  });
+
+  app.delete("/delete/flows/editorresult", (req, res) => {
+    var id = req.body.editorId;
+    var result = req.body.result;
+    ////console.log(req.body);
+    dbo
+      .collection("EditorContent")
+      .updateOne({ EditorId: id }, { $pull: { result: result } }, function (
+        err,
+        res
+      ) {
+        if (err) throw err;
+      });
+
+    res.send("deleted from result");
   });
 
   // app.put("/update-after-delete/flows/steps", (req, res) => {
@@ -442,7 +549,7 @@ MongoClient.connect(url, function (err, db) {
     let levelName = {};
     levelName["label"] = req.body.level2;
     level2.push(levelName);
-    console.log("level2", levelName);
+    ////console.log("level2", levelName);
     // dbo
     //   .collection("PanelMenuCollection")
     //   .updateOne(
@@ -486,7 +593,7 @@ MongoClient.connect(url, function (err, db) {
     var level2_Label = {};
     level2_Label["label"] = req.body.level2;
     var serverDetail = req.body.serverDetail;
-    console.log(serverDetail);
+    ////console.log(serverDetail);
     // dbo
     //   .collection("PanelMenuCollection")
     //   .find({ label: level1_Label })
@@ -494,7 +601,7 @@ MongoClient.connect(url, function (err, db) {
     //     if (err) throw err;
     //     let level2 = result[0].Level2;
     //     level2.map(level => {
-    //       console.log(level.label);
+    //       //console.log(level.label);
     //       if (level.label === req.body.level2) {
     //         let serverArray = [];
     //         if (level.Servers) {
@@ -503,7 +610,7 @@ MongoClient.connect(url, function (err, db) {
     //         } else {
     //           serverArray.push(serverDetail);
     //         }
-    //         console.log(serverArray);
+    //         //console.log(serverArray);
     //         dbo
     //           .collection("PanelMenuCollection")
     //           .updateMany(
@@ -566,7 +673,7 @@ MongoClient.connect(url, function (err, db) {
 
   // //insert the first level panel menu into PanelMenuCollectionNew
   app.post("/insert/connectivity/level1/type2", (req, res) => {
-    console.log("req", req.body);
+    //console.log("req", req.body);
     var Topid = { TopId: "000" };
     var label = { Label: req.body.level1 };
     var type = { Type: "level" };
@@ -574,13 +681,13 @@ MongoClient.connect(url, function (err, db) {
       .collection("PanelMenuCollectionNew")
       .find({})
       .toArray(function (err, result) {
-        console.log(result);
+        //console.log(result);
         if (err) throw err;
         var i = result.length;
         var lastDoc = result[i - 1];
-        console.log(lastDoc);
+        //console.log(lastDoc);
         var id = { ID: lastDoc.ID + 1 };
-        console.log("id", id);
+        //console.log("id", id);
         var insertDetails = Object.assign({}, Topid, id, label, type);
         dbo
           .collection("PanelMenuCollectionNew")
@@ -600,13 +707,13 @@ MongoClient.connect(url, function (err, db) {
       .collection("PanelMenuCollectionNew")
       .find({})
       .toArray(function (err, result) {
-        console.log(result);
+        //console.log(result);
         if (err) throw err;
         var i = result.length;
         var lastDoc = result[i - 1];
-        console.log(lastDoc);
+        //console.log(lastDoc);
         var id = { ID: lastDoc.ID + 1 };
-        console.log("id", id);
+        //console.log("id", id);
         var insertDetails = Object.assign({}, Topid, id, label, type);
         dbo
           .collection("PanelMenuCollectionNew")
@@ -626,13 +733,13 @@ MongoClient.connect(url, function (err, db) {
       .collection("PanelMenuCollectionNew")
       .find({})
       .toArray(function (err, result) {
-        console.log(result);
+        //console.log(result);
         if (err) throw err;
         var i = result.length;
         var lastDoc = result[i - 1];
-        console.log(lastDoc);
+        //console.log(lastDoc);
         var id = { ID: lastDoc.ID + 1 };
-        console.log("id", id);
+        //console.log("id", id);
         var insertDetails = Object.assign({}, Topid, id, label, type);
         dbo
           .collection("PanelMenuCollectionNew")
@@ -645,9 +752,9 @@ MongoClient.connect(url, function (err, db) {
 
   //delete document from PanelMenuCollection
   app.delete("/delete/connectivity", (req, res) => {
-    console.log("req", req.body);
+    //console.log("req", req.body);
     var id = req.body.id;
-    console.log("id", id);
+    //console.log("id", id);
     dbo
       .collection("PanelMenuCollectionNew")
       .deleteOne({ ID: id }, function (err, res) {
@@ -659,7 +766,7 @@ MongoClient.connect(url, function (err, db) {
 
   //delete document from ServerDetail collection
   app.delete("/delete/connectivity/server", (req, res) => {
-    console.log("req", req.body);
+    //console.log("req", req.body);
     var id = req.body.id;
     dbo
       .collection("ServerDetailsCollection")
@@ -671,7 +778,7 @@ MongoClient.connect(url, function (err, db) {
 
   //delete document from ServerDetail collection
   app.delete("/delete/connectivity/node", (req, res) => {
-    console.log("req", req.body);
+    //console.log("req", req.body);
     var id = req.body.id;
     dbo
       .collection("NodeCollection")
@@ -683,7 +790,7 @@ MongoClient.connect(url, function (err, db) {
 
   app.delete("/delete/connectivity/multiple", (req, res) => {
     var request = req.body.value;
-    console.log(request);
+    //console.log(request);
     dbo
       .collection("PanelMenuCollectionNew")
       .deleteMany({ ID: { $in: request } }, function (err, res) {
@@ -738,7 +845,7 @@ MongoClient.connect(url, function (err, db) {
         nodeTypeArray.map((node) => {
           if (node.Name === nodeType) {
             node.Node_Name.push(nodeName);
-            console.log("updated node", nodeTypeArray);
+            //console.log("updated node", nodeTypeArray);
             dbo
               .collection("ServerDetailsCollection")
               .updateOne(
@@ -772,7 +879,7 @@ MongoClient.connect(url, function (err, db) {
       .createIndex({ Node_Name: 1 }, { unique: true }, function (err, resp) {
         if (err) throw err;
       });
-    console.log(request);
+    //console.log(request);
     dbo.collection("NodeCollection").insertMany(request, function (err, res) {
       if (err) throw err;
     });
@@ -793,7 +900,7 @@ MongoClient.connect(url, function (err, db) {
   //Excel Upload
   app.post("/insert/connectivity/excel-upload", (req, res) => {
     var fileName = req.body.fileName;
-    console.log(fileName);
+    //console.log(fileName);
     var workbook = XLSX.readFile(fileName);
     var sheetList = workbook.SheetNames;
     var xlData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetList[0]]);
@@ -836,13 +943,19 @@ MongoClient.connect(url, function (err, db) {
         } else if (type === "Receive Variable") {
           actionObj = {
             Type: type,
-            variable: req.query.variable,
+            variable: [req.query.variable],
             id: req.query.id,
           };
         } else if (type === "Add Text Message") {
           actionObj = {
             Type: type,
             message: req.query.message,
+            id: req.query.id,
+          };
+        } else if (type === "Add Json Object") {
+          actionObj = {
+            Type: type,
+            message: req.query.objMessage,
             id: req.query.id,
           };
         } else {
@@ -900,13 +1013,26 @@ MongoClient.connect(url, function (err, db) {
                 message: message,
                 id: action.id,
               };
+            } else if (type === "Add Json Object") {
+              actionObj = {
+                Type: action.Type,
+                message: req.body.objMessage,
+                id: action.id,
+              };
             } else if (type === "Receive Variable") {
               actionObj = {
                 Type: action.Type,
-                variable: req.body.variable,
+                variable: [req.body.variable],
+                id: action.id,
+              };
+            } else if (type === "Run a Command") {
+              actionObj = {
+                Type: action.Type,
+                Command: req.body.command,
                 id: action.id,
               };
             }
+            //console.log("actionobj", actionObj);
             dbo
               .collection("FlowContent")
               .updateOne(
@@ -920,6 +1046,102 @@ MongoClient.connect(url, function (err, db) {
         });
       });
     res.send("updated");
+  });
+
+  app.put("/flow/update/add-receive-variable", (req, res) => {
+    var flowname = req.body.flowName;
+    var step = req.body.stepNo;
+    var id = req.body.id;
+    var actionType = req.body.actionType;
+    var variable = req.body.variable;
+    dbo
+      .collection("FlowContent")
+      .find({ Flow: flowname, Step: step })
+      .toArray(function (err, result) {
+        if (err) throw err;
+        result[0].Action.map((action, index) => {
+          if (action.Type === actionType && action.id === id) {
+            dbo.collection("FlowContent").updateOne(
+              { Flow: flowname, Step: step },
+              {
+                $push: { ["Action." + index + ".variable"]: variable },
+              },
+              function (err, res) {
+                if (err) throw err;
+              }
+            );
+          }
+        });
+      });
+    res.send("receive variable added");
+  });
+
+  app.put("/flow/edit/add-receive-variable", (req, res) => {
+    //console.log("in edit", req.body);
+    var flowname = req.body.flowName;
+    var step = req.body.stepNo;
+    var id = req.body.id;
+    var actionType = req.body.actionType;
+    var oldvariable = req.body.oldvariable;
+    var newvariable = req.body.newvariable;
+    var varIndex = req.body.varIndex;
+    dbo
+      .collection("FlowContent")
+      .find({ Flow: flowname, Step: step })
+      .toArray(function (err, result) {
+        if (err) throw err;
+        result[0].Action.map((action, index) => {
+          if (action.Type === actionType && action.id === id) {
+            action.variable.map((actionVar, index1) => {
+              if (actionVar === oldvariable) {
+                dbo.collection("FlowContent").updateOne(
+                  { Flow: flowname, Step: step },
+                  {
+                    $set: {
+                      ["Action." + index + ".variable." + index1]: newvariable,
+                    },
+                  },
+                  function (err, res) {
+                    if (err) throw err;
+                  }
+                );
+              }
+            });
+          }
+        });
+      });
+    res.send("receive variable added");
+  });
+
+  app.put("/flow/delete/add-receive-variable", (req, res) => {
+    var flowname = req.body.flowName;
+    var step = req.body.stepNo;
+    var id = req.body.id;
+    var actionType = req.body.actionType;
+    var variable = req.body.variable;
+    var varIndex = req.body.varIndex;
+    dbo
+      .collection("FlowContent")
+      .find({ Flow: flowname, Step: step })
+      .toArray(function (err, result) {
+        if (err) throw err;
+        result[0].Action.map((action, index) => {
+          if (action.Type === actionType && action.id === id) {
+            dbo.collection("FlowContent").updateOne(
+              { Flow: flowname, Step: step },
+              {
+                $pull: {
+                  ["Action." + index + ".variable"]: variable,
+                },
+              },
+              function (err, res) {
+                if (err) throw err;
+              }
+            );
+          }
+        });
+      });
+    res.send("receive variable deleted");
   });
 
   //store receive variable
@@ -974,7 +1196,7 @@ MongoClient.connect(url, function (err, db) {
 
   //delete receive variable
   app.delete("/delete/receivevariable", (req, res) => {
-    console.log(req.body.id);
+    //console.log(req.body.id);
     dbo
       .collection("ReceiveVariable")
       .find({ flowName: req.body.flowName })
@@ -983,7 +1205,7 @@ MongoClient.connect(url, function (err, db) {
         if (result.length != 0) {
           result[0].variable.forEach((vari, index) => {
             if (vari.id === req.body.id) {
-              console.log("equal");
+              //console.log("equal");
               result[0].variable.splice(index, 1);
             }
           });
@@ -1028,7 +1250,7 @@ MongoClient.connect(url, function (err, db) {
             if (err) throw err;
           });
         } else {
-          // console.log("condition", result[0].Link);
+          // //console.log("condition", result[0].Link);
           // result[0].Link.map(link => {
           //   if(link.Condition === req.query.oldcondition){
           //     dbo
@@ -1043,12 +1265,12 @@ MongoClient.connect(url, function (err, db) {
           //   }
           // })
           let i = req.query.index;
-          console.log("index", i);
+          //console.log("index", i);
           if (i >= 0) {
             result[0].Link.map((link, index) => {
-              console.log("index inside", index);
+              //console.log("index inside", index);
               if (index == i) {
-                console.log("index to change", link);
+                //console.log("index to change", link);
                 dbo.collection("FlowContent").updateOne(
                   { Flow: flowname, Step: stepno },
                   {
@@ -1090,12 +1312,12 @@ MongoClient.connect(url, function (err, db) {
     let stepno = req.body.stepno;
     let condition = req.body.condition;
     let nextstep = req.body.nextstep;
-    console.log(req.body);
+    //console.log(req.body);
     dbo
       .collection("FlowContent")
       .find({ Flow: flowname, Step: stepno })
       .toArray(function (err, result) {
-        console.log("result", result);
+        //console.log("result", result);
         if (result.length !== 0) {
           result[0].Link.map((link, index) => {
             if (link.Condition === condition) {
@@ -1133,7 +1355,7 @@ MongoClient.connect(url, function (err, db) {
 
   //delete action details from FLowContent
   app.delete("/delete/flow/action", (req, res) => {
-    console.log("req", req.body);
+    //console.log("req", req.body);
     let type = req.body.Type;
     let delObj = {};
 
@@ -1168,7 +1390,7 @@ MongoClient.connect(url, function (err, db) {
 
   //delete link details from FLowContent
   app.delete("/delete/flow/link", (req, res) => {
-    console.log("req", req.body);
+    //console.log("req", req.body);
     let delObj = {};
     delObj = {
       Condition: req.body.condition,
@@ -1220,7 +1442,7 @@ MongoClient.connect(url, function (err, db) {
 
           if (result.length != 0) {
             const payload = { id: req.body.username };
-            console.log(payload);
+            //console.log(payload);
             const token = jwt.sign(payload, process.env.SECRET_OR_KEY);
 
             dbo

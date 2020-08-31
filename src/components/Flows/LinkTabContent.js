@@ -46,6 +46,7 @@ class LinkTabContent extends Component {
   };
 
   handleStepChange = (value) => {
+    this.setState({ disabled: false });
     this.setState({ step: value });
   };
 
@@ -106,12 +107,13 @@ class LinkTabContent extends Component {
   };
 
   setRadio = (e) => {
+    //this.setState({ disabled: false });
     this.setState({ radio: e.target.value }, () =>
       console.log("radio clicked", this.state.radio)
     );
   };
   render() {
-    console.log("props in link", this.props);
+    //console.log("props in link", this.props);
     // console.log("index", this.state.index);
     return (
       <div
@@ -160,6 +162,7 @@ class LinkTabContent extends Component {
               name="floworstep"
               value={this.state.radio}
               onChange={(event) => this.setRadio(event)}
+              disabled={this.state.alreadySaved ? true : false}
             >
               <option>Select</option>
               <option value="Flow">Flow</option>

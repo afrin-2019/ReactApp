@@ -30,7 +30,7 @@ class Canvas extends Component {
 
   componentDidMount() {
     //console.log("in canvas mount", this.props.flowName);
-    console.log("in mount canvas");
+    //console.log("in mount canvas");
     this.setPath();
   }
 
@@ -87,7 +87,7 @@ class Canvas extends Component {
   };
 
   onDeleteStep = () => {
-    console.log("in canvas delete step");
+    //console.log("in canvas delete step");
     axios
       .put("http://localhost:5001/delete/flows/steps", {
         flowName: this.props.flowName,
@@ -165,7 +165,7 @@ class Canvas extends Component {
   };
 
   componentWillReceiveProps() {
-    console.log("receive props", this.props);
+    //console.log("receive props", this.props);
     this.setPath();
   }
 
@@ -204,7 +204,7 @@ class Canvas extends Component {
   };
 
   refFlowListInCanvas = () => {
-    console.log("flowlist refresh in canvas");
+    //console.log("flowlist refresh in canvas");
     axios.get("http://localhost:5001/get/flows/flowList").then((response) => {
       console.log("res", response);
       this.setState({ flowList: response.data });
@@ -217,7 +217,7 @@ class Canvas extends Component {
   };
 
   endLine = () => {
-    console.log("in end line canvas");
+    //console.log("in end line canvas");
     let pathArray = [],
       pathname;
     axios.get("http://localhost:5001/get/flows/pathinfo").then((res) => {
@@ -337,8 +337,6 @@ class Canvas extends Component {
     //console.log("in canvas render");
     //console.log("props in canvas", this.props);
     // console.log("state", this.state);
-    console.log("pathlist", this.state.pathList);
-    console.log("flowList", this.props.flowList);
     let divList, pathList;
     divList = (
       <div>
@@ -434,17 +432,9 @@ class Canvas extends Component {
                 </button>
               ) : null}
             </div>
-            {/* <div id="canvas1" ref={this.reff}>
-            <svg height="200" width="500">
-              <path
-                d={this.state.d1}
-                stroke="grey"
-                strokeWidth="2"
-                fill="none"
-              ></path>
-            </svg>
-          </div> */}
+
             <div id="canvas1">
+              {/* <div id="wrap"> */}
               <svg id="svg">{this.state.pathList} </svg>
               {/* <SvgLines
               svgId={this.props.flowName}
@@ -453,6 +443,7 @@ class Canvas extends Component {
             /> */}
             </div>
             <div>{divList}</div>
+            {/* </div> */}
           </div>
         </div>
       </React.Fragment>

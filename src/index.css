@@ -207,12 +207,29 @@ code {
   behavior: url(/pie/PIE.htc);
 }
 
+/* .sidebar_right #canvas {
+  width: 100vw;
+  position: absolute;
+  left: 320px;
+} */
+
+/* #canvas1 {
+  width: 100%;
+  height: 100%;
+  position: relative;
+} */
+
 #topcanvas {
   height: 50px;
   width: 100%;
   background-color: white;
   border-bottom: 2px solid #d3d3d3;
   /* position: absolute; */
+}
+
+#wrap {
+  position: absolute;
+  width: 500%;
 }
 
 #svg {
@@ -319,6 +336,12 @@ code {
   /* margin-left: 50px; */
 }
 
+.sidebar_right .savebtn {
+  position: absolute;
+  top: 0;
+  right: 60px;
+}
+
 .smallbtn {
   height: 40px;
   width: 40px;
@@ -331,6 +354,7 @@ code {
 } */
 path {
   stroke: blue;
+  opacity: 0.7;
   stroke-width: 3;
   fill: none;
 }
@@ -348,14 +372,15 @@ path:hover {
 #canvaswrapper {
   width: 100%;
   height: 100%;
-  position: relative;
+  /* position: relative; */
   border: 2px solid #d3d3d3;
   margin: 2px 2px 0px 0px;
 }
 
 .editor {
   top: 50px;
-  background-color: black;
+  background-color: white;
+  border-radius: 10px;
   z-index: 10;
   height: 500px;
   width: 900px;
@@ -367,6 +392,7 @@ path:hover {
   width: 500px;
   height: 30px;
   background-color: dimgrey;
+  border-top-left-radius: 10px;
   position: absolute;
 }
 .realeditw {
@@ -399,7 +425,7 @@ path:hover {
 }
 .realedit {
   width: 200%;
-  height: 200%;
+  height: 500%;
   /* width: 500px;
   height: 440px; */
   position: absolute;
@@ -433,6 +459,8 @@ path:hover {
   z-index: 1;
   overflow: auto;
   background-color: lightgray;
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
   padding: 10px;
   font-weight: bold;
   font: "sans-serif";
@@ -448,6 +476,7 @@ svg {
   width: 500px;
   height: 30px;
   background-color: dimgrey;
+  border-bottom-left-radius: 10px;
   top: 470px;
   position: absolute;
 }
@@ -456,10 +485,10 @@ svg {
   height: 5px;
 }
 #realeditw::-webkit-scrollbar-thumb {
-  background-color: lightgray;
+  background-color: darkgray;
 }
 #realeditw::-webkit-scrollbar-track {
-  background-color: black;
+  background-color: white;
 }
 #result {
   background-color: lightgray;
@@ -503,4 +532,21 @@ mark {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+}
+
+.overlay-opacity-editor {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: white;
+  opacity: 0.5;
+}
+.overlay-editor {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
 }

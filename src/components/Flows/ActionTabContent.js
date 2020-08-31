@@ -1,7 +1,8 @@
 import React, { Component } from "react";
 import Axios from "axios";
 import Editor from "./Editor";
-
+import InputField from "./InputField";
+let inputKey = -1;
 class ActionTabContent extends Component {
   state = {
     action: this.props.selectedAction || "0",
@@ -11,13 +12,10 @@ class ActionTabContent extends Component {
     openEditor: false,
     variable: this.props.val || "",
     message: this.props.message || "",
+    objMessage: this.props.objMessage || "",
     editorId:
-      "Editor-" +
-      this.props.flowSelected +
-      "-" +
-      this.props.stepNo +
-      "-" +
-      this.props.editorId,
+      this.props.editorId ||
+      "Editor-" + this.props.flowSelected + "-" + this.props.stepNo + "-" + 0,
     content: "",
     result: "",
     alreadySaved: false,
@@ -27,27 +25,75 @@ class ActionTabContent extends Component {
     conId: this.props.conId || 0,
     rvId: this.props.rvId || 0,
     mId: this.props.mId || 0,
+    jsonId: this.props.jsonId || 0,
     uniqueId:
       this.props.eId ||
       this.props.cId ||
       this.props.nId ||
       this.props.conId ||
       this.props.rvId ||
-      this.props.mId,
+      this.props.mId ||
+      this.props.jsonId,
+    option: "Editor",
+    inputField: [],
   };
 
   componentDidMount() {
+    console.log("this.state", this.state);
     console.log("in mount", this.state.variable);
     if (this.state.action !== "0") {
       this.setState({ disabled: true });
       this.setState({ alreadySaved: true });
     }
+
+    if (this.state.variable.length === 0) {
+      inputKey++;
+      this.setState({
+        inputField: [
+          ...this.state.inputField,
+          <InputField
+            key={inputKey}
+            index={0}
+            flowSelected={this.props.flowSelected}
+            stepNo={this.props.stepNo}
+            id={"0"}
+            save={this.onConfirmVariable}
+            deleteInput={this.deleteInput}
+            addVariable={this.addVariable}
+            editVariable={this.editVariable}
+          />,
+        ],
+      });
+    }
+    if (this.state.action === "5") {
+      this.setState({
+        inputField: this.state.variable.map((q, index) => {
+          inputKey = index;
+          return (
+            <InputField
+              key={inputKey}
+              index={inputKey}
+              variable={q}
+              flowSelected={this.props.flowSelected}
+              stepNo={this.props.stepNo}
+              id={this.state.uniqueId}
+              save={this.onConfirmVariable}
+              deleteInput={this.deleteInput}
+              addVariable={this.addVariable}
+              editVariable={this.editVariable}
+            />
+          );
+        }),
+      });
+    }
+
     let i = 0,
       j = 0,
       k = 0,
       l = 0,
       m = 0,
-      n = 0;
+      n = 0,
+      o = 0;
     Axios.get("http://localhost:5001/get/flows/flowContent").then((res) => {
       if (res.data.length !== 0) {
         res.data.map((array, index) => {
@@ -73,6 +119,9 @@ class ActionTabContent extends Component {
                   if (action.Type === "Add Text Message") {
                     n = parseInt(action.id) + 1;
                   }
+                  if (action.Type === "Add Json Object") {
+                    o = parseInt(action.id) + 1;
+                  }
                 });
               }
             }
@@ -85,12 +134,14 @@ class ActionTabContent extends Component {
       this.setState({ conId: l });
       this.setState({ rvId: m });
       this.setState({ mId: n });
+      this.setState({ jsonId: o });
     });
   }
 
   onOpenEditor = () => {
     console.log("opopen", this.state.openEditor);
     console.log("editorid", this.state.editorId);
+    this.onConfirmParse();
     Axios.get("http://localhost:5001/get/flows/editorContent").then((res) => {
       console.log("table", res.data);
       res.data.map((editor, index) => {
@@ -105,6 +156,7 @@ class ActionTabContent extends Component {
 
   onCloseEditor = () => {
     this.setState({ openEditor: false });
+    //this.onConfirmParse();
   };
   handleActionChange = (actionType) => {
     console.log("handle action");
@@ -122,17 +174,45 @@ class ActionTabContent extends Component {
   };
 
   handleCommand = (e) => {
+    this.setState({ disabled: false });
     this.setState({ command: e.target.value });
   };
 
   handleVariable = (e) => {
     this.setState({ disabled: false });
+
     this.setState({ variable: e.target.value });
   };
 
   handleTextMessage = (e) => {
     this.setState({ disabled: false });
     this.setState({ message: e.target.value });
+  };
+
+  handleObjectMessage = (e) => {
+    this.setState({ disabled: false });
+    this.setState({ objMessage: e.target.value });
+  };
+
+  addInput = () => {
+    inputKey++;
+    console.log(this.state.inputField);
+    this.setState({
+      inputField: [
+        ...this.state.inputField,
+        <InputField
+          key={inputKey}
+          index={inputKey}
+          flowSelected={this.props.flowSelected}
+          stepNo={this.props.stepNo}
+          id={this.state.uniqueId}
+          save={this.onConfirmVariable}
+          deleteInput={this.deleteInput}
+          addVariable={this.addVariable}
+          editVariable={this.editVariable}
+        />,
+      ],
+    });
   };
 
   onConfirmNode = () => {
@@ -168,60 +248,81 @@ class ActionTabContent extends Component {
   };
 
   onconfirmCommand = () => {
-    this.setState({ uniqueId: this.state.cId.toString() });
-    console.log("command", this.state.command);
-    console.log("flowList", this.props.flowList);
-    console.log("flow", this.props.flowSelected);
-    console.log("step", this.props.stepNo);
-    Axios.get("http://localhost:5001/flow/content/action", {
-      params: {
-        id: this.state.cId,
+    if (!this.state.alreadySaved) {
+      this.setState({ uniqueId: this.state.cId.toString() });
+
+      console.log("command", this.state.command);
+      console.log("flowList", this.props.flowList);
+      console.log("flow", this.props.flowSelected);
+      console.log("step", this.props.stepNo);
+      Axios.get("http://localhost:5001/flow/content/action", {
+        params: {
+          id: this.state.cId,
+          flowName: this.props.flowSelected,
+          stepNo: this.props.stepNo,
+          command: this.state.command,
+          type: "Run a Command",
+        },
+      }).then((res) => {
+        console.log("res", res);
+        this.setState({ disabled: true });
+        this.props.enableAdd();
+        this.setState({ alreadySaved: true });
+      });
+    } else {
+      Axios.put("http://localhost:5001/update/content/action", {
         flowName: this.props.flowSelected,
         stepNo: this.props.stepNo,
-        command: this.state.command,
         type: "Run a Command",
-      },
-    }).then((res) => {
-      console.log("res", res);
-      this.setState({ disabled: true });
-      this.props.enableAdd();
-    });
+        id: this.state.uniqueId,
+        command: this.state.command,
+      }).then((res) => {
+        console.log(res);
+        this.setState({ disabled: true });
+        this.setState({ alreadySaved: true });
+        this.props.enableAdd();
+      });
+    }
   };
 
   onConfirmParse = () => {
-    this.setState({ uniqueId: this.state.eId.toString() });
-    this.setState({
-      editorId:
-        "Editor-" +
-        this.props.flowSelected +
-        "-" +
-        this.props.stepNo +
-        "-" +
-        this.state.eId,
-    });
-    Axios.get("http://localhost:5001/flow/content/action", {
-      params: {
-        id: this.state.eId,
-        flowName: this.props.flowSelected,
-        stepNo: this.props.stepNo,
-        file: this.state.file,
-        type: "Parse the Output",
-        EditorId:
+    console.log("save parse", this.state.alreadySaved);
+    if (!this.state.alreadySaved) {
+      this.setState({ alreadySaved: true });
+      this.setState({ uniqueId: this.state.eId.toString() });
+      this.setState({
+        editorId:
           "Editor-" +
           this.props.flowSelected +
           "-" +
           this.props.stepNo +
           "-" +
           this.state.eId,
-      },
-    }).then((res) => {
-      console.log("res", res);
-      this.setState({ disabled: true });
-      this.props.enableAdd();
-    });
+      });
+      Axios.get("http://localhost:5001/flow/content/action", {
+        params: {
+          id: this.state.eId,
+          flowName: this.props.flowSelected,
+          stepNo: this.props.stepNo,
+          file: this.state.file,
+          type: "Parse the Output",
+          EditorId:
+            "Editor-" +
+            this.props.flowSelected +
+            "-" +
+            this.props.stepNo +
+            "-" +
+            this.state.eId,
+        },
+      }).then((res) => {
+        console.log("res", res);
+        this.setState({ disabled: true });
+        this.props.enableAdd();
+      });
+    }
   };
 
-  onConfirmVariable = () => {
+  onConfirmVariable = (variable) => {
     if (!this.state.alreadySaved) {
       this.setState({ uniqueId: this.state.rvId.toString() });
       // Axios.post("http://localhost:5001/insert/receivevariable", {
@@ -237,14 +338,16 @@ class ActionTabContent extends Component {
           id: this.state.rvId,
           flowName: this.props.flowSelected,
           stepNo: this.props.stepNo,
-          variable: this.state.variable,
+          variable: variable,
           type: "Receive Variable",
         },
       }).then((res) => {
         console.log("res", res);
         this.setState({ disabled: true });
         this.setState({ alreadySaved: true });
+        this.setState({ disableAdd: false });
         this.props.enableAdd();
+        this.addVariable(variable);
       });
     } else {
       Axios.put("http://localhost:5001/update/content/action", {
@@ -258,8 +361,24 @@ class ActionTabContent extends Component {
         this.setState({ disabled: true });
         this.setState({ alreadySaved: true });
         this.props.enableAdd();
+        this.setState({ disableAdd: false });
       });
     }
+  };
+
+  addVariable = (variable) => {
+    this.setState({ variable: [...this.state.variable, variable] }, () =>
+      console.log(this.state.variable)
+    );
+  };
+
+  editVariable = (oldVar, newVar) => {
+    let editArray = [...this.state.variable];
+    editArray.map((variable, index) => {
+      if (variable === oldVar) {
+        editArray.splice(index, 1, newVar);
+      }
+    });
   };
 
   onConfirmMessage = () => {
@@ -295,6 +414,39 @@ class ActionTabContent extends Component {
     }
   };
 
+  onObjectMessage = () => {
+    if (!this.state.alreadySaved) {
+      this.setState({ uniqueId: this.state.jsonId.toString() });
+      Axios.get("http://localhost:5001/flow/content/action", {
+        params: {
+          id: this.state.mId,
+          flowName: this.props.flowSelected,
+          stepNo: this.props.stepNo,
+          objMessage: this.state.objMessage,
+          type: "Add Json Object",
+        },
+      }).then((res) => {
+        console.log("res", res);
+        this.setState({ disabled: true });
+        this.setState({ alreadySaved: true });
+        this.props.enableAdd();
+      });
+    } else {
+      Axios.put("http://localhost:5001/update/content/action", {
+        flowName: this.props.flowSelected,
+        stepNo: this.props.stepNo,
+        type: "Add Json Object",
+        id: this.state.uniqueId,
+        objMessage: this.state.objMessage,
+      }).then((res) => {
+        console.log(res);
+        this.setState({ disabled: true });
+        this.setState({ alreadySaved: true });
+        this.props.enableAdd();
+      });
+    }
+  };
+
   onDelete = () => {
     if (this.state.action === "4") {
       Axios.get("http://localhost:5001/get/flows/editorContent").then((res) => {
@@ -319,10 +471,44 @@ class ActionTabContent extends Component {
       this.state.uniqueId
     );
   };
+
+  onRadioChange = (e) => {
+    this.setState({ option: e.target.value });
+  };
+
+  setVariableState = (index, value) => {
+    console.log(this.state.variable);
+  };
+
+  deleteInput = (ind) => {
+    console.log("before", this.state.inputField);
+    console.log(this.state.variable);
+    const inField = [...this.state.inputField];
+    console.log(inField);
+    inField.map((input, index) => {
+      console.log("inField", input);
+      if (index === ind) {
+        inField.splice(index, 1);
+      }
+    });
+    this.setState({ inputField: inField }, () =>
+      console.log("after", this.state.inputField)
+    );
+    const stateVar = [...this.state.variable];
+    stateVar.map((varb, index) => {
+      if (index === ind) {
+        stateVar.splice(index, 1);
+      }
+    });
+    this.setState({ variable: stateVar }, () => {
+      console.log(this.state.variable);
+    });
+  };
+
   render() {
     // console.log("props in action", this.props);
     // console.log("action state", this.state);
-    let commandContent;
+    let commandContent, inputContent;
     if (this.state.action === "1") {
       commandContent = (
         <button
@@ -368,24 +554,48 @@ class ActionTabContent extends Component {
     if (this.state.action === "4") {
       commandContent = (
         <div style={{ margin: 10 }}>
-          <button
-            style={{ margin: 2 }}
-            onClick={this.onOpenEditor}
-            disabled={!this.state.disabled}
-          >
-            Editor{" "}
-          </button>
           <input
-            type="file"
-            id="file"
-            ref="fileUploader"
-            onChange={(e) => this.handleChange(e)}
-            style={{ display: "none" }}
+            type="radio"
+            id="editor"
+            value="Editor"
+            name="parse"
+            onChange={this.onRadioChange}
+            checked={this.state.option === "Editor"}
           />
-          <label htmlFor="file">{this.state.file}</label>
-          <button style={{ margin: 2 }} onClick={this.handleClick}>
-            Browse
-          </button>
+          <label htmlFor="editor">Open Editor</label> &nbsp;
+          <input
+            type="radio"
+            id="browse"
+            value="Browse"
+            name="parse"
+            onChange={this.onRadioChange}
+            checked={this.state.option === "Browse"}
+          />
+          <label htmlFor="browse">Upload File</label> <br />
+          {this.state.option === "Editor" ? (
+            <button
+              style={{ margin: 2 }}
+              onClick={this.onOpenEditor}
+              //disabled={!this.state.disabled}
+            >
+              Editor{" "}
+            </button>
+          ) : null}
+          {this.state.option === "Browse" ? (
+            <React.Fragment>
+              <input
+                type="file"
+                id="file"
+                ref="fileUploader"
+                onChange={(e) => this.handleChange(e)}
+                style={{ display: "none" }}
+              />
+              <label htmlFor="file">{this.state.file}</label>
+              <button style={{ margin: 2 }} onClick={this.handleClick}>
+                Browse
+              </button>
+            </React.Fragment>
+          ) : null}
           <button
             style={{ margin: 2 }}
             onClick={this.onConfirmParse}
@@ -398,20 +608,22 @@ class ActionTabContent extends Component {
     }
     if (this.state.action === "5") {
       commandContent = (
-        <div style={{ margin: 10 }}>
-          <input
-            type="text"
-            value={this.state.variable}
-            onChange={this.handleVariable}
-          />
-          <button
-            style={{ margin: 2 }}
-            onClick={this.onConfirmVariable}
-            disabled={this.state.disabled}
-          >
-            save
-          </button>
-        </div>
+        <div style={{ margin: 10 }}>{this.state.inputField}</div>
+        //    <input
+        //       type="text"
+        //       value={this.state.variable}
+        //       onChange={this.handleVariable}
+        //     />
+        //     <button
+        //       style={{ margin: 2, fontSize: 10 }}
+        //       className="btn"
+        //       onClick={this.onConfirmVariable}
+        //       disabled={this.state.disabled}
+        //     >
+        //       <i className="fa fa-save" />
+        //     </button>
+        //     {this.state.inputField}
+        // </div>
       );
     }
     if (this.state.action === "6") {
@@ -425,6 +637,25 @@ class ActionTabContent extends Component {
           <button
             style={{ margin: 2 }}
             onClick={this.onConfirmMessage}
+            disabled={this.state.disabled}
+          >
+            save
+          </button>
+        </div>
+      );
+    }
+
+    if (this.state.action === "7") {
+      commandContent = (
+        <div style={{ margin: 10 }}>
+          <input
+            type="text"
+            value={this.state.objMessage}
+            onChange={this.handleObjectMessage}
+          />
+          <button
+            style={{ margin: 2 }}
+            onClick={this.onObjectMessage}
             disabled={this.state.disabled}
           >
             save
@@ -461,6 +692,23 @@ class ActionTabContent extends Component {
           {" "}
           <i className="fa fa-trash" />
         </button>
+        {this.state.action === "5" && (
+          <button
+            style={{
+              position: "absolute",
+              top: 0,
+              right: 15,
+              margin: 2,
+              fontSize: 10,
+            }}
+            className="btn"
+            onClick={this.addInput}
+            //disabled={this.state.disabled}
+            title="Add Variable"
+          >
+            <i className="fa fa-plus" />
+          </button>
+        )}
         <div
         //style={{ display: "flex", justifyContent: "center" }}
         >
@@ -477,6 +725,7 @@ class ActionTabContent extends Component {
             <option value="4">Parse the output</option>
             <option value="5">Receive Variable</option>
             <option value="6">Add Text Message</option>
+            <option value="7">Add Json Object</option>
           </select>
         </div>
 
@@ -488,22 +737,26 @@ class ActionTabContent extends Component {
         </div>
 
         {this.state.openEditor ? (
-          <Editor
-            id={this.state.editorId}
-            // id={
-            //   "Editor-" +
-            //   this.props.flowSelected +
-            //   "-" +
-            //   this.props.stepNo +
-            //   "-" +
-            //   this.state.eId
-            // }
-            flowName={this.props.flowSelected}
-            stepNo={this.props.stepNo}
-            content={this.state.content}
-            result={this.state.result}
-            handleClose={this.onCloseEditor}
-          />
+          <div className="overlay-editor">
+            <div className="overlay-opacity-editor" />
+            <Editor
+              id={this.state.editorId}
+              // id={
+              //   "Editor-" +
+              //   this.props.flowSelected +
+              //   "-" +
+              //   this.props.stepNo +
+              //   "-" +
+              //   this.state.eId
+              // }
+              flowName={this.props.flowSelected}
+              stepNo={this.props.stepNo}
+              content={this.state.content}
+              result={this.state.result}
+              handleClose={this.onCloseEditor}
+              handleSave={this.onConfirmParse}
+            />
+          </div>
         ) : null}
       </div>
     );

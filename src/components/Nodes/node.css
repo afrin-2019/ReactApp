@@ -1,0 +1,41 @@
+#nodemain {
+  margin-left: 200px;
+}
+
+#nodetable {
+  height: 50%;
+  width: 100%;
+  padding: 10px;
+}
+
+.node table,
+.node td,
+.node th {
+  border: 1px solid #ddd;
+  text-align: center;
+}
+
+.node thead,
+.node tbody,
+.node tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed; /* even columns width , fix width of table too*/
+}
+
+.node th,
+.node td {
+  padding: 15px;
+}
+
+.node tbody {
+  overflow: auto;
+  display: block;
+  height: 200px;
+}
+
+.node thead {
+  width: calc(
+    100% - 1.5em
+  ); /*scrollbar is average 1em/16px width, remove it from thead width */
+}

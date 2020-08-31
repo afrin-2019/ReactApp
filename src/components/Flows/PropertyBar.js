@@ -10,10 +10,14 @@ class PropertyBar extends Component {
   };
 
   render() {
-    console.log("in prp", this.props.step);
-    console.log("props", this.props);
+    //console.log("in prp", this.props.step);
+    //console.log("props", this.props);
     return (
-      <div className="sidebar_right" id={"rightSideBar" + this.props.step}>
+      <div
+        className="sidebar_right"
+        id={"rightSideBar" + this.props.step}
+        style={{ userSelect: "none" }}
+      >
         <button
           className="btn btn-sm btn-outline-secondary m-2 closebtn"
           onClick={this.closeBar}

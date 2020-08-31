@@ -113,9 +113,6 @@ class AddNode extends Component {
     document.onmousemove = this.elementDrag;
     dragitem = document.getElementById(e.target.parentElement.id);
     //console.log("drag item", dragitem);
-    // document.onmouseup = this.state.lineStart
-    //   ? this.endLine
-    //   : this.closeDragElement;
   };
 
   elementDrag = (e) => {
@@ -210,9 +207,9 @@ class AddNode extends Component {
     }
   };
   closeDragElement = (e) => {
-    console.log("mouse up ", this.state.lineStart);
+    //console.log("mouse up ", this.state.lineStart);
     if (this.state.isPath) {
-      console.log("reqobj", this.state.reqObj);
+      //console.log("reqobj", this.state.reqObj);
       if (this.state.reqObj.length !== 0) {
         this.state.reqObj.map((reqObj) => {
           axios
@@ -220,7 +217,7 @@ class AddNode extends Component {
               data: reqObj,
             })
             .then((res) => {
-              console.log("update only once", res);
+              //console.log("update only once", res);
               this.setState({ isPath: false });
             });
         });
@@ -232,7 +229,7 @@ class AddNode extends Component {
               data: reqObj,
             })
             .then((res) => {
-              console.log("update only once", res);
+              //console.log("update only once", res);
               this.setState({ isPath: false });
             });
         });
@@ -254,7 +251,7 @@ class AddNode extends Component {
         this.props.refresh();
         //this.props.refreshPath();
       });
-    console.log("line start", drawline);
+    //console.log("line start", drawline);
     if (drawline === true) {
       this.endLine(e);
     }
@@ -285,6 +282,7 @@ class AddNode extends Component {
   attachFlow = (condition, value) => {
     // i++;
     // j++;
+    console.log("in attach flow");
     this.setState({ i: this.state.i + 1 });
     this.setState({ j: this.state.j + 1 });
     let pathid, spanId;
@@ -310,10 +308,13 @@ class AddNode extends Component {
         addDiv: [
           ...this.state.addDiv,
           <React.Fragment key={this.state.i}>
-            <div className="wrapItem" id={"wrapitem" + this.state.i}>
+            <div
+              className="wrapItem"
+              id={"item" + this.props.index + "wrapitem" + this.state.i}
+            >
               <div
                 className="stepitembox"
-                id={"stepitembox" + this.state.j}
+                id={"item" + this.props.index + "stepitembox" + this.state.j}
                 //onMouseUp={this.endLine}
                 style={{ userSelect: "none" }}
               >
@@ -392,7 +393,7 @@ class AddNode extends Component {
     canvas = document.getElementById("canvas1");
     //console.log(canvas);
     //canvas.appendChild(svg);
-    console.log("event", event.target.id);
+    //console.log("event", event.target.id);
     targetid = document.getElementById(event.target.id);
     condition = targetid.parentElement.childNodes[0].innerHTML;
     parentTarget = document.getElementById("item" + this.props.index);
@@ -436,7 +437,7 @@ class AddNode extends Component {
       this.endid = document.getElementById(
         document.elementFromPoint(event.clientX, event.clientY).parentElement.id
       );
-      console.log("endid", this.endid);
+      //console.log("endid", this.endid);
 
       d =
         "M" +
@@ -448,7 +449,7 @@ class AddNode extends Component {
         " " +
         (this.endid.offsetTop - 20);
       let pathname = lined.id + "-" + targetid.id;
-      console.log("end d - ", d);
+      //console.log("end d - ", d);
       lined.setAttribute("d", d);
       //this.props.endLine(d, lined.id);
       this.hiddenel = document.createElement("p");
@@ -460,13 +461,13 @@ class AddNode extends Component {
       this.hiddenspan.hidden = "true";
       this.hiddenspan.innerHTML = pathname;
       this.hiddenspan.id = "Span-" + lined.id;
-      console.log("exact", targetid.parentElement.parentElement);
-      console.log(parentTarget.children);
+      //console.log("exact", targetid.parentElement.parentElement);
+      //console.log(parentTarget.children);
       targetid.parentElement.appendChild(this.hiddenspan);
-      console.log(
-        "start step is",
-        startStep + " end step is" + this.props.stepName
-      );
+      //console.log(
+      //  "start step is",
+      //  startStep + " end step is" + this.props.stepName
+      //);
       let req = {
         flowName: this.props.flowName,
         pathid: lined.id,
@@ -479,7 +480,7 @@ class AddNode extends Component {
       axios
         .post("http://localhost:5001/insert/flows/pathInfo", { data: req })
         .then((res) => {
-          console.log(res);
+          // console.log(res);
           axios
             .put("http://localhost:5001/update/flow/link", {
               flowName: this.props.flowName,
@@ -488,7 +489,7 @@ class AddNode extends Component {
               nextstep: this.props.stepName,
             })
             .then((res) => {
-              console.log(res);
+              // console.log(res);
               this.props.endLine();
             });
 
@@ -507,16 +508,16 @@ class AddNode extends Component {
   };
 
   editFlow = (condition, oldcondition) => {
-    console.log("div", this.state.addDiv);
+    //console.log("div", this.state.addDiv);
     let editDiv = [...this.state.addDiv];
     //let editDiv = Object.assign([], this.state.addDiv);
-    console.log("edited condition", condition, oldcondition);
+    //console.log("edited condition", condition, oldcondition);
     editDiv.map((div, index) => {
       let child = div.props.children;
       if (child.type === "div") {
-        console.log("condition = ", child.props.children[0].props.children);
+        //console.log("condition = ", child.props.children[0].props.children);
         if (child.props.children[0].props.children === oldcondition) {
-          console.log("div", div);
+          //console.log("div", div);
           editDiv.splice(
             index,
             1,
@@ -556,7 +557,7 @@ class AddNode extends Component {
           this.setState({ addDiv: editDiv });
         }
       } else {
-        console.log("condition = ", child);
+        //console.log("condition = ", child);
         if (child === oldcondition) {
           editDiv.splice(
             index,
@@ -572,7 +573,7 @@ class AddNode extends Component {
             </div>
           );
           this.setState({ addDiv: editDiv });
-          console.log(this.state.addDiv);
+          //console.log(this.state.addDiv);
         }
       }
     });
@@ -582,19 +583,40 @@ class AddNode extends Component {
     console.log("req del", req);
     console.log("div", this.state.addDiv);
     let isDel = false;
-    this.state.addDiv.map((div, index) => {
+    let delsideItem;
+    let itemUpdate;
+    let arr = [...this.state.addDiv];
+    arr.map((div, index) => {
       // if (!isDel) {
       let child = div.props.children;
-      console.log("child", child);
+      //console.log("child", child);
       if (child.type === "div") {
         //    if (!req.step) {
-        console.log("child", div.props.children);
-        console.log(child.props.children[0].props.children);
+        //console.log("child", div.props.children);
+        //console.log(child.props.children[0].props.children);
+        //--------------------------------------------------------------
+        // if (isDel) {
+        //   console.log("div - isDel True", div);
+        //   console.log("deleted id is", delsideItem); //deleted item id
+        //   let idNo = delsideItem.split("sideitembox");
+        //   let val = parseInt(idNo[1]);
+        //   let nextId = val + 1;
+        //   delsideItem = idNo[0] + "sideitembox" + nextId; //next item after the deleted item
+        //   console.log(delsideItem);
+        //   document.getElementById(idNo[0] + "stepitembox" + nextId).id =
+        //     idNo[0] + "stepitembox" + val;
+        //   document.getElementById(delsideItem).id =
+        //     idNo[0] + "sideitembox" + val;
+        //   document.getElementById(idNo[0] + "wrapitem" + nextId).id =
+        //     idNo[0] + "wrapitem" + val;
+        // }
+        //------------------------------------------------------------
 
         if (req.condition === child.props.children[0].props.children) {
           console.log("if condition satisfied");
           console.log(child.props.children[0].props.children);
           let sideItemId = child.props.children[1].props.id;
+          itemUpdate = sideItemId;
           console.log("path to be deleted from ", sideItemId);
           this.props.pathInfo.map((path) => {
             let sideid = path.pathname.split("-");
@@ -606,6 +628,8 @@ class AddNode extends Component {
               };
               console.log("request when complete delete", req1);
               isDel = true;
+              delsideItem = sideid[1];
+
               axios
                 .delete("http://localhost:5001/delete/flows/path", {
                   data: req1,
@@ -613,7 +637,62 @@ class AddNode extends Component {
                 .then((res) => {
                   console.log(res);
                   this.props.rerender(this.props.flowName);
-
+                  //--------------------------------------
+                  console.log(sideid[1]);
+                  let finalItemId = sideid[1].split("sideitembox");
+                  console.log(finalItemId);
+                  let finalItemId1 = finalItemId[0]; //get the id of the item whose link is deleted
+                  let elemId = finalItemId[1]; //get the id of the elements which is deleted
+                  console.log(finalItemId, elemId);
+                  this.props.pathInfo.map((path) => {
+                    if (path.flowname === this.props.flowName) {
+                      let itemid = path.pathname.split("-");
+                      let finalid = itemid[1].split("sideitembox");
+                      if (finalid[0] === finalItemId1) {
+                        if (finalid[1] > elemId) {
+                          let n = parseInt(finalid[1]) - 1;
+                          let newpathname =
+                            itemid[0] + "-" + finalid[0] + "sideitembox" + n;
+                          let d_path = path.path.split(" ");
+                          let updateVal = parseInt(d_path[1]) - 43;
+                          let updatepath =
+                            d_path[0] +
+                            " " +
+                            updateVal +
+                            " " +
+                            d_path[2] +
+                            " " +
+                            d_path[3];
+                          let request = {
+                            flowName: this.props.flowName,
+                            pathname: path.pathname,
+                            newpathname: newpathname,
+                            updatedPath: updatepath,
+                          };
+                          // document.getElementById(
+                          //   "Span-" + itemid[0]
+                          // ).innerHTML = newpathname;
+                          // document.getElementById(
+                          //   "P-" + itemid[0]
+                          // ).innerHTML = newpathname;
+                          axios
+                            .put(
+                              "http://localhost:5001/update/flows/pathname",
+                              {
+                                data: request,
+                              }
+                            )
+                            .then((res) => {
+                              console.log(res);
+                              this.props.rerender(this.props.flowName);
+                              //this.props.refreshPath();
+                              //this.updateFlow(itemUpdate);
+                            });
+                        }
+                      }
+                    }
+                  });
+                  //-------------------------------------------------------
                   let ptag = document.getElementById("P-" + sideid[0]);
                   if (ptag !== null) {
                     ptag.remove();
@@ -629,7 +708,9 @@ class AddNode extends Component {
           // if (req.condition === child.props.children[0].props.children) {
           let divArray = [...this.state.addDiv];
           divArray.splice(index, 1);
-          this.setState({ addDiv: divArray });
+          this.setState({ addDiv: divArray }, () => {
+            console.log("ADD DIV", this.state.addDiv);
+          });
         }
         //   }
       } else {
@@ -643,11 +724,77 @@ class AddNode extends Component {
     });
   };
 
+  updateFlow = (deletedItem) => {
+    console.log("in update flow");
+    // axios
+    //   .get("http://localhost:5001/get/flows/pathInfo", {
+    //     params: {
+    //       flowName: this.props.flowName,
+    //     },
+    //   })
+    //   .then((res) => {
+    let splitElem = deletedItem.split("sideitembox");
+    let elemId = splitElem[1];
+    let itId = splitElem[0];
+
+    let edDiv = [...this.state.addDiv];
+    edDiv.map((div, index) => {
+      console.log(div);
+      let child = div.props.children;
+      if (div.key > elemId) {
+        let key = div.key - 1;
+
+        if (child.type === "div") {
+          edDiv.splice(
+            index,
+            1,
+            <React.Fragment key={div.key}>
+              <div className="wrapItem" id={itId + "wrapitem" + key}>
+                <div
+                  className="stepitembox"
+                  id={itId + "stepitembox" + key}
+                  //onMouseUp={this.endLine}
+                  style={{ userSelect: "none" }}
+                >
+                  {child.props.children[0].props.children}
+                </div>
+
+                <div
+                  className="sideitembox"
+                  id={itId + "sideitembox" + key}
+                  onMouseDown={this.startLine}
+                ></div>
+                {this.props.pathInfo.map((path, index) => {
+                  if (path.flowname === this.props.flowName) {
+                    let pathid = path.pathname.split("-");
+                    let spanId = itId + "sideitembox" + key;
+                    console.log(pathid, spanId);
+                    if (pathid[1] === spanId) {
+                      console.log("inside", path.pathname);
+                      console.log(spanId);
+                      return (
+                        <span key={index} hidden id={"Span-" + pathid[0]}>
+                          {path.pathname}
+                        </span>
+                      );
+                    }
+                  }
+                })}
+              </div>
+            </React.Fragment>
+          );
+          this.setState({ addDiv: edDiv });
+        }
+      }
+    });
+    //  });
+  };
+
   onDeleteStep = () => {
     //document.getElementById("item" + this.props.index).remove();
     let step = this.props.stepName;
-    console.log("in delete step");
-    console.log("this.props.stepName", this.props.stepName);
+    //console.log("in delete step");
+    //console.log("this.props.stepName", this.props.stepName);
     axios
       .put("http://localhost:5001/delete/flows/steps", {
         flowName: this.props.flowName,
@@ -664,28 +811,28 @@ class AddNode extends Component {
             data: request,
           })
           .then((res) => {
-            console.log("after path delete", res);
+            //console.log("after path delete", res);
             this.props.rerender(this.props.flowName);
             axios
               .get("http://localhost:5001/get/flows/flowContent")
               .then((res) => {
-                console.log("flowcontent", res.data);
+                //console.log("flowcontent", res.data);
                 res.data.map((flow) => {
                   //console.log("flowcontent", this.state.flowContent);
                   //this.state.flowContent.map((flow) => {
-                  console.log("flow", flow);
-                  console.log(this.props.flowName + "-" + step);
-                  console.log("this.props.stepName", this.props.stepName);
+                  //console.log("flow", flow);
+                  //console.log(this.props.flowName + "-" + step);
+                  //console.log("this.props.stepName", this.props.stepName);
                   if (flow.Flow === this.props.flowName) {
-                    console.log("true");
+                    //console.log("true");
                     if (flow.Step === step) {
-                      console.log("true");
+                      //console.log("true");
                       axios
                         .delete("http://localhost:5001/delete/flowcontent", {
                           data: request,
                         })
                         .then((res) => {
-                          console.log(res);
+                          //console.log(res);
 
                           //this.props.rerender(this.props.flowName);
                           this.setState({ addDiv: [] });

@@ -79,7 +79,7 @@ class ServerDetailNew extends Component {
 
   showVendor = () => {
     console.log("vendor", this.state.vendor);
-    let vendor;
+    let vendor = this.state.vendor;
     this.state.nodeInfo.map((node) => {
       if (
         this.props.serverId === node.Server_Id &&

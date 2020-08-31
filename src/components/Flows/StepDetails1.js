@@ -18,8 +18,8 @@ class StepDetails1 extends Component {
   };
 
   componentDidMount() {
-    document.getElementById("defaultOpen").click();
-    console.log("step detail mount");
+    document.getElementById("defaultOpen" + this.props.selectedStep).click();
+    console.log("step detail mount", this.props.selectedStep);
     let isContent = false;
     ///this.refresh();
     //this.setContent();
@@ -240,7 +240,7 @@ class StepDetails1 extends Component {
                     <ActionTabContent
                       //edId={i}
                       eId={action1.id}
-                      editorId={action1.id}
+                      editorId={action1.EditorId}
                       file={file}
                       key={actionKey}
                       selectedAction={action}
@@ -289,6 +289,24 @@ class StepDetails1 extends Component {
                     />,
                   ],
                 });
+              } else if (action1.Type === "Add Json Object") {
+                this.setState({
+                  content: [
+                    ...this.state.content,
+                    <ActionTabContent
+                      jsonId={action1.id}
+                      objMessage={action1.message}
+                      key={actionKey}
+                      selectedAction={"7"}
+                      id={actionKey}
+                      handleDelete={this.deleteAction}
+                      flowList={this.props.handleFlowList}
+                      flowSelected={this.props.flowSelected}
+                      stepNo={this.props.selectedStep}
+                      enableAdd={() => this.enableButton()}
+                    />,
+                  ],
+                });
               }
             });
           } else {
@@ -319,17 +337,23 @@ class StepDetails1 extends Component {
   openCity = (evt, name) => {
     // Declare all variables
     var i, tabcontent, tablinks;
-
+    var tabcontent1, tabcontent2;
     // Get all elements with class="tabcontent" and hide them
     tabcontent = document.getElementsByClassName("tabcontent");
     for (i = 0; i < tabcontent.length; i++) {
-      tabcontent[i].style.display = "none";
+      let tabId = tabcontent[i].id;
+      if (tabId.indexOf(this.props.selectedStep) !== -1) {
+        tabcontent[i].style.display = "none";
+      }
     }
 
     // Get all elements with class="tablinks" and remove the class "active"
     tablinks = document.getElementsByClassName("tablinks");
     for (i = 0; i < tablinks.length; i++) {
-      tablinks[i].className = tablinks[i].className.replace(" active", "");
+      let tabId = tablinks[i].id;
+      if (tabId.indexOf(this.props.selectedStep) !== -1) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+      }
     }
 
     // Show the current tab, and add an "active" class to the button that opened the tab
@@ -451,6 +475,8 @@ class StepDetails1 extends Component {
       type = "Receive Variable";
     } else if (action === "6") {
       type = "Add Text Message";
+    } else if (action === "7") {
+      type = "Add Json Object";
     }
     request = {
       flowname: this.props.flowSelected,
@@ -535,7 +561,7 @@ class StepDetails1 extends Component {
     }).then((res) => {
       console.log("res", res);
       this.refresh();
-      this.props.refresh();
+      //this.props.refresh();
       this.props.deleteFlow(request);
 
       //this.setContent();
@@ -557,7 +583,6 @@ class StepDetails1 extends Component {
     this.props.attachFlow(condition, value);
   };
   render() {
-    console.log("render stepdetails");
     // console.log("flow content", this.state.flowContent);
     // console.log("prop in step detail", this.props);
     let action, val, file;
@@ -574,20 +599,25 @@ class StepDetails1 extends Component {
           <div className="tab">
             <button
               className="tablinks"
-              onClick={(event) => this.openCity(event, "Action")}
-              id="defaultOpen"
+              onClick={(event) =>
+                this.openCity(event, "Action" + this.props.selectedStep)
+              }
+              id={"defaultOpen" + this.props.selectedStep}
             >
               Action
             </button>
             <button
               className="tablinks"
-              onClick={(event) => this.openCity(event, "Link")}
+              onClick={(event) =>
+                this.openCity(event, "Link" + this.props.selectedStep)
+              }
+              id={"linkTab" + this.props.selectedStep}
             >
               Link
             </button>
           </div>
 
-          <div id="Action" className="tabcontent">
+          <div id={"Action" + this.props.selectedStep} className="tabcontent">
             <div
               style={{
                 position: "-webkit-sticky",
@@ -700,7 +730,7 @@ class StepDetails1 extends Component {
             {this.state.content}
           </div>
 
-          <div id="Link" className="tabcontent">
+          <div id={"Link" + this.props.selectedStep} className="tabcontent">
             <div
               style={{
                 position: "-webkit-sticky",

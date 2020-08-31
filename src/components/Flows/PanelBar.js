@@ -55,14 +55,14 @@ class Flow extends Component {
     };
     console.log("in refresh path", req);
     axios.get("http://localhost:5001/get/flows/pathInfo").then((res) => {
-      console.log("path info", res.data);
+      //console.log("path info", res.data);
       this.setState({ pathInfo: res.data });
     });
   };
 
   refreshFlowList = () => {
     axios.get("http://localhost:5001/get/flows/flowList").then((response) => {
-      console.log("res", response);
+      //console.log("res", response);
       this.setState({ flowList: response.data });
     });
   };
@@ -92,7 +92,7 @@ class Flow extends Component {
           data: list_to_add,
         })
         .then((res) => {
-          console.log("res after insert", res);
+          //console.log("res after insert", res);
           this.refreshFlowList();
         });
       //this.setState({ flowList: [...this.state.flowList, list_to_add] });
@@ -114,12 +114,12 @@ class Flow extends Component {
   };
 
   onButtonClick = (flow) => {
-    console.log("button click", flow);
-    console.log("button");
+    //console.log("button click", flow);
+
     //this.setState({ deleteStep: false });
     this.refreshFlowList();
     axios.get("http://localhost:5001/get/flows/pathInfo").then((res) => {
-      console.log("path info", res.data);
+      //console.log("path info", res.data);
 
       this.setState({ pathInfo: res.data }, () => {
         this.setState({ selectedFlow: flow });
@@ -129,7 +129,7 @@ class Flow extends Component {
   };
 
   updateFlow = (flowList, selectedStep) => {
-    console.log("in update", flowList, "and step no is" + selectedStep);
+    //console.log("in update", flowList, "and step no is" + selectedStep);
     flowList.map((flow) => {
       console.log("inside map", flow);
       if (flow.name === this.state.selectedFlow) {
@@ -165,7 +165,7 @@ class Flow extends Component {
     axios
       .delete("http://localhost:5001/delete/flows/flowList", { data: req })
       .then((res) => {
-        console.log("res", res);
+        //console.log("res", res);
         this.refreshFlowList();
         this.setState({ selectedFlow: "" });
         this.refreshPathInfo();
@@ -221,12 +221,12 @@ class Flow extends Component {
   };
 
   addStep = (stepno) => {
-    console.log("addstep", this.state.flowList);
-    console.log("stepno - Step", stepno);
-    console.log("flow", this.state.selectedFlow);
+    //console.log("addstep", this.state.flowList);
+    //console.log("stepno - Step", stepno);
+    //console.log("flow", this.state.selectedFlow);
 
     this.state.flowList.map((flow, index) => {
-      console.log("inside map", flow);
+      //console.log("inside map", flow);
       if (flow.name === this.state.selectedFlow) {
         let stepNo = flow.steps.length + 1;
         let stepName = "Step" + stepNo;
@@ -242,7 +242,7 @@ class Flow extends Component {
         axios
           .put("http://localhost:5001/insert/flows/steps", { data: request })
           .then((response) => {
-            console.log("res after step insert", response);
+            //console.log("res after step insert", response);
             this.refreshFlowList();
           });
       }
